@@ -130,8 +130,254 @@ def analyze_text_with_gemini(pdf_path):
                 
         17. **Sector:**
             * Determine and specify the company's sector and sub sector.
-            * Refer to this link for categorization: https://www.bursamalaysia.com/sites/5bb54be15f36ca0af339077a/content_entry5ce3b50239fba2627b2864be/5ce3b5d35b711a163beae1c3/files/BURSA_MALAYSIA_SECTOR_CLASSIFICATION_OF_APPLICANTS_OR_LISTED_ISSUERS_Nov2024.pdf?1736733279
-            * Only refer to this link, do not assume anything.
+            * Refer the table below, do not make any assumptions:
+            
+            Sector          Sub Sector              Definition
+            -----------------------------------------------------------------------------------------------------
+            1               1.1                     Companies engaged in the construction of commercial and
+            CONSTRUCTION    CONSTRUCTION            residential buildings, infrastructure such as railways, highways,
+                                                    roads and providers of building construction-related services
+                                                    such as architects, interior design
+            
+            2               2.1                     Companies that raise livestock and operate fisheries. Includes
+            CONSUMER        AGRICULTURAL            manufacturers of livestock feeds
+            PRODUCTS &      PRODUCTS
+            SERVICES
+                            2.2                     Companies that produce and distribute passenger automobiles
+                            AUTOMOTIVE
+            
+                            2.3                     Businesses not covered in the other prescribed sub sectors
+                            CONSUMER                under Consumer Products & Services
+                            SERVICES
+            
+                            2.4                     Food or beverages producers including packaged foods, dairy
+                            FOOD/BEVERAGES          products, brewers, soft drinks
+            
+                            2.5                     Manufacturers and distributors of household products including
+                            HOUSEHOLD GOODS         furniture, kitchenware, consumer electronics
+            
+                            2.6                     Manufacturers and distributers of personal products including
+                            PERSONAL GOODS          textiles, apparel, footwear, jewellery, timepieces, accessories,
+                                                    cosmetics, personal care, tobacco
+            
+                            2.7                     Owners and operators of retail stores including direct marketing
+                            RETAILERS
+            
+                            2.8                     Companies providing travel and tourism related services
+                            TRAVEL, LEISURE &       includes airlines, gambling, hotels, restaurants and recreational
+                            HOSPITALITY             services
+            
+            3               3.1                     Suppliers of equipment and services to oil and gas producers
+            ENERGY          ENERGY                  such as drilling, exploration, platform construction
+                            INFRASTRUCTURE,
+                            EQUIPMENT &
+                            SERVICES
+            
+                            3.2                     Companies engaged in the exploration and production of oil and
+                            OIL & GAS               gas
+                            PRODUCERS
+            
+                            3.3                     Companies that produce alternative energy including alternative
+                            OTHER ENERGY            fuels
+                            RESOURCES
+            
+                            3.4                     Companies that provide equipment and services involved in
+                            RENEWABLE ENERGY        producing renewable energy
+            
+            -----------------------------------------------------------------------------------------------------
+            
+            Sector          Sub Sector              Definition
+            -----------------------------------------------------------------------------------------------------
+            4               4.1                     Banks providing a broad range of financial services, including
+            FINANCIAL       ΒΑΝΚING                 retail banking, loans and money transmissions
+            SERVICES
+            
+                            4.2                     Insurance companies with products in life, health, property and
+                            INSURANCE               casualty insurance, takaful
+            
+                            4.3                     Companies engaged in financial activities not specified
+                            OTHER                   elsewhere, include stock exchanges, securities, asset
+                            FINANCIALS              management companies and other service providers to financial
+                                                    institutions
+            
+            5               5.1                     Manufacturers and distributors of health care equipment and
+            HEALTH CARE     HEALTH CARE             providers of health care services includes lab testing services,
+                            EQUIPMENT &             dialysis centers
+                            SERVICES
+            
+                            5.2                     Owners and operators of health care facilities including
+                            HEALTH CARE             hospitals, clinics, nursing homes, rehabilitation centres
+                            PROVIDERS
+            
+                            5.3                     Companies engaged in the research, development, production
+                            PHARMACEUTICALS         or distribution of pharmaceuticals
+            
+            6               6.1                     Manufacturers and distributors of parts and accessories for
+            INDUSTRIAL      AUTO PARTS              automobiles and motorcycles such as tires, batteries, engines
+            PRODUCTS &
+            SERVICES
+            
+                            6.2                     Manufacturers and wholesalers of building materials including
+                            BUILDING                cement, concrete, tiles and paint
+                            MATERIALS
+            
+                            6.3                     Companies that primarily produce and distribute chemicals for
+                            CHEMICALS               industry use. Includes plastics and rubber in their raw form or
+                                                    molded plastic products, polymers, adhesives, dyes, coatings
+                                                    and other chemicals for specialised applications
+            
+                            6.4                     Diversified companies with business activities in three or more
+                            DIVERSIFIED             sectors of which none contributes substantial revenue
+                            INDUSTRIALS
+            
+                            6.5                     Manufacturers and distributors of heavy machinery and
+                            INDUSTRIAL              engineering equipment
+                            ENGINEERING
+            
+                            6.6                     Manufacturers and distributors of industrial machinery and
+                            INDUSTRIAL              components which includes machine tools, castings and
+                            MATERIALS,              moulding equipment, presses, compressors, elevators and
+                            COMPONENTS &            escalators
+                            EQUIPMENT
+            
+            -----------------------------------------------------------------------------------------------------
+            
+            Sector          Sub Sector              Definition
+            -----------------------------------------------------------------------------------------------------
+            7               6.7                     Businesses not covered in the other prescribed sub sectors
+            PLANTATION      INDUSTRIAL              under Industrial Products & Services
+                            SERVICES
+            
+                            6.8                     Producers and traders of metals and metal products which
+                            METALS                  includes iron, aluminium and steel
+            
+                            6.9                     Manufacturers & distributors of paper, containers, cardboard,
+                            PACKAGING               bags, boxes and cans used for packaging
+                            MATERIALS
+            
+                            6.10                    Manufacturers and distributors of timber and related wood
+                            WOOD AND WOOD           products
+                            PRODUCTS
+            
+            8               7.1                     Companies engaged in the cultivation, planting and/or replanting
+            PROPERTY        PLANTATION              of crops
+            
+                            8.1                     Companies that invest in real estate through development,
+                            PROPERTY                investment and ownership including real estate service providers
+                                                    such as real estate brokers, agencies, leasing companies,
+                                                    management companies and advisory services
+            
+            9               9.1                     Real estate investment trusts that focus investment in a portfolio
+            REAL ESTATE     REAL ESTATE             of income-generating properties such as shopping malls, hotels,
+            INVESTMENT      INVESTMENT              offices and service apartments
+            TRUSTS          TRUSTS
+            
+            10              10.1                    Companies providing internet-related services such as Internet
+            TECHNOLOGY      DIGITAL                 access providers, search engines and providers of website
+                            SERVICES                design, web hosting and e-mail services including companies
+                                                    that provide solutions and platforms for e-commerce or
+                                                    electronic payments
+            
+                            10.2                    Companies engaged in the manufacturing and distribution of
+                            SEMICONDUCTORS          semiconductors and semiconductor equipment
+            
+                            10.3                    Companies engaged in developing and producing software
+                            SOFTWARE                designed for specialised application such as systems software,
+                                                    enterprise and technical software, mobile application
+            
+                            10.4                    Manufacturers and distributors of technology hardware and
+                            TECHNOLOGY              equipment such as computers, servers, mainframes,
+                            EQUIPMENT               workstations and related peripherals such as mass-storage
+                                                    drives, motherboards, monitors, keyboards, printers, smartcards
+            
+            -----------------------------------------------------------------------------------------------------
+            
+            Sector              Sub Sector          Definition
+            -----------------------------------------------------------------------------------------------------
+            11                  11.1                Companies providing advertising, public relations and marketing
+            TELECOMMUNICATIONS  MEDIA               services includes producers, operators and broadcasters of
+            & MEDIA                                 radio, television, music and filmed entertainment, publishers of
+                                                    information via printed or electronic media
+            
+                                11.2                Producers and distributors of telecommunication equipment
+                                TELECOMMUNICATIONS  such as satelites, LANs, WANs, routers, mobile telephones,
+                                EQUIPMENT           fibers optics, teleconferencing equipment
+            
+                                11.3                Providers of mobile and fixed-line telecommunication networks
+                                TELECOMMUNICATIONS  and providers of satelite and wireless data communication
+                                SERVICE             solutions and related services
+                                PROVIDERS
+            
+            12                  12.1                Companies providing transportation services including
+            TRANSPORTATION      TRANSPORTATION      companies that manage airports, train depots, ports and
+            & LOGISTICS         & LOGISTICS         providers of courier and logistic services
+                                SERVICES
+            
+                                12.2                Manufacturers and distributors of transportation equipment
+                                TRANSPORTATION      includes shipbuilding
+                                EQUIPMENT
+            
+            13                  13.1                Companies that produce or distribute electricity
+            UTILITIES           ELECTRICITY
+            
+                                13.2                Companies providing water or distribute gas to end-users or
+                                GAS, WATER &        utility companies with significant presence in more than one
+                                MULTI-UTILITIES     utility
+            
+                                13.3                Companies that produce or distribute electricity through a
+                                RENEWABLE ENERGY    renewable energy source
+                                ELECTRICITY
+            
+            14                  14.1                Close-ended investment entities
+            CLOSED END FUND     CLOSED END FUND
+            
+            15                  15.1                Special purpose acquisition companies
+            SPECIAL             SPECIAL
+            PURPOSE             PURPOSE
+            ACQUISITION         ACQUISITION
+            COMPANY             COMPANY
+            
+            16                  16.1                Conventional fixed income securities that are listed and traded
+            BOND                CONVENTIONAL-MGS    on the stock market
+            CONVENTIONAL
+            
+                                16.2                Conventional fixed income securities that are listed and traded
+                                CONVENTIONAL-GG     on the stock market
+            
+                                16.3                Conventional fixed income securities that are listed and traded
+                                CONVENTIONAL-PDS    on the stock market
+            
+            -----------------------------------------------------------------------------------------------------
+            
+            Sector              Sub Sector          Definition
+            -----------------------------------------------------------------------------------------------------
+            17                  17.1                Shariah Compliant fixed income securities that are listed and
+            BOND ISLAMIC        ISLAMIC-GII         traded on the stock market
+            
+                                17.2                Shariah Compliant fixed income securities that are listed and
+                                ISLAMIC-GG          traded on the stock market
+            
+                                17.3                Shariah Compliant fixed income securities that are listed and
+                                ISLAMIC-PDS         traded on the stock market
+            
+            18                  18.1                Open-ended investment entities
+            EXCHANGE            COMMODITY FUND
+            TRADED FUND-
+            COMMODITY
+            
+            19                  19.1                Open-ended investment entities
+            EXCHANGE            EQUITY FUND
+            TRADED FUND-
+            EQUITY
+            
+            20                  20.1                Open-ended investment entities
+            EXCHANGE            BOND FUND
+            TRADED FUND-
+            BOND
+            
+            21                  21.1                Business enterprises that are set up as trust, instead of
+            BUSINESS            BUSINESS TRUST      companies. They are hybrid structures with elements of both
+            TRUST                                   companies and trusts and created by a trust deed
 
         OUTPUT REQUIREMENTS (MUST BE FOLLOWED EXACTLY):
 
@@ -185,7 +431,7 @@ def analyze_text_with_gemini(pdf_path):
 
 if __name__ == "__main__":
     # Specify the PDF path here:
-    pdf_path = os.path.join('msbpdf_abridged.pdf')  # Replace with the actual path to your PDF file
+    pdf_path = os.path.join('hi_abridged.pdf')  # Replace with the actual path to your PDF file
 
     if not os.path.exists(pdf_path):
         print(f"Error: PDF file '{pdf_path}' not found.")
