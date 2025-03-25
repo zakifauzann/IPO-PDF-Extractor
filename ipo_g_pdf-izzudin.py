@@ -96,27 +96,30 @@ def analyze_pdf_with_gemini(pdf_path):
 
         13. **Geographical Segments**:
             * Extract total revenue per geographical segment.
-            * You MUST take values of latest FYE (search values under the latest FYE year).
+            * You MUST take values of latest Financial Year Ended(FYE) (search values under the latest FYE year).
             * You MUST use the values of the TOTAL revenues.
             * You MUST calculate the percentage based on the total revenue.
+            * Show percentage as floats, eq, 2.25% -> 2.25
             * If the segment data is not found, return null.
             * Figures must be in RM'000.
 
         14. **Business Segments**:
             * Extract total revenue per business segment.
-            * You MUST take values of latest FYE (search values under the latest FYE year).
+            * You MUST take values of latest Financial Year Ended(FYE) (search values under the latest FYE year).
             * You MUST use the values of the TOTAL revenues.
             * You MUST calculate the percentage based on the total revenue.
+            * Show percentage as floats, eq, 2.25% -> 2.25
             * If the segment data is not found, return null.
             * Figures must be in RM'000.
 
         15. **Major Customers**:
         * Extract major customers and their total revenue contribution.
-        * Take values of latest FYE.
+        * You MUST take values of latest Financial Year Ended(FYE) (search values under the latest FYE year).
         * Each entry must include:
             - **Name/Segment**
             - **Total Revenue (RM'000)**
             - **Percentage (%)**
+            - Show percentage as floats, eq, 2.25% -> 2.25
         * If a table states "-" for revenue, consider it null.
 
         16. **Corporate Structure**:
@@ -423,17 +426,17 @@ def analyze_pdf_with_gemini(pdf_path):
             "Utilisation of Proceeds - Debt Funding ['000]": int,
 
     ---
-    For Pro Forma related items, extract data from *PRO FORMA CONSOLIDATED STATEMENTS OF FINANCIAL POSITION* table
+    For Pro Forma related items, extract data from *PRO FORMA CONSOLIDATED STATEMENTS OF FINANCIAL POSITION* table, understand the table and extract data
             "Profit After Tax (PAT) ['000]": int (Take Latest Financial Year Ended (FYE)),
             "PAT (FYE) List ['000, comma-separated]": "Comma-separated values",
             "PAT (FPE) List ['000, comma-separated]": "Comma-separated values (if available)",
-            "FPE Period": "Period ending MM-DD",
+            "FPE Period": ,
             "PE (reported)": float,
             "PAT Margin [%]": float (Take Latest Financial Year Ended (FYE)),
-            "Total Assets (Pro Forma) ['000]": int (TOTAL ASSETS for pro forma ii),
-            "Total Liabilities (Pro Forma) ['000]": int,
-            "Total Cash ['000]": int (Total Cash and Bank Balances),
-            "Total Interest-Bearing Borrowings ['000]": int,
+            "Total Assets (Pro Forma) ['000]": int(total_assets_pro_forma , Take Pro Forma II values),
+            "Total Liabilities (Pro Forma) ['000]": int(total_liabilities_pro_forma, Take Pro Forma II values),
+            "Total Cash ['000]": int(total_cash_and_bank_balances, Take Pro Forma II values),
+            "Total Interest-Bearing Borrowings ['000]": int(total_interest_bearing_borrowings),
     ---
             "Bursa Peers (from IMR section)": "Comma-separated list",
             "International Peers (from IMR section)": "Comma-separated list",
@@ -446,7 +449,7 @@ def analyze_pdf_with_gemini(pdf_path):
 
 Output Requirements (Must Be Followed Exactly)  
 
-- VALID JSON FORMAT: This is your top priority. Ensure the output is a strictly valid JSON object.  
+- VALID JSON FORMAT: This is your top priority. Ensure the output is a **STRICTLY valid JSON** object.  
 - Numerical Values: Represent as numbers, not strings (e.g., 1234567.89). Percentages should be numbers (e.g., 25.0 for 25%).  
 - Arrays: Use arrays for lists (e.g., Executive Directors).  
 - Missing Information: If a field is not found, set it to `null`. Do not fabricate information.  
@@ -555,6 +558,14 @@ Sample output:
             }
             ]
         },
+            {
+            "Sector" : [
+                {
+                "sector" : "UTILITIES"
+                "sub-sector" : "ELECTRICITY"
+                }
+                ]
+            }
         {
             "Name": "Company name",
             "Website": "Company website address",
@@ -599,7 +610,6 @@ Sample output:
             "Broker TP (Median)": float,
             "Notes on Brokers TP, etc. (Private)": "Additional broker notes",
             "Business Prospect Score Adjuster": int,
-            "Sectors": "Company sectors",
             "Bursa Peers (from IMR section)": "Comma-separated list",
             "International Peers (from IMR section)": "Comma-separated list",
             "MITI Application Open Date": "DD MMMM YYYY",
@@ -612,20 +622,19 @@ Sample output:
     }
     """
 
+    # Upload the PDF using the File API
+    pdf_file = client.files.upload(
+        file=pdf_path,
+        )
+
     try:
         # Generate content using Gemini AI
         response = client.models.generate_content(
             model="gemini-2.0-flash",
             config=types.GenerateContentConfig(
-                temperature=0.5 # Low temperature for consistent outputs, low randomness
+                temperature=0.4 # Low temperature for consistent outputs, low randomness
             ),
-            contents=[
-                types.Part.from_bytes(
-                    data=Path(pdf_path).read_bytes(),
-                    mime_type='application/pdf',
-                ),
-                prompt
-            ]  
+            contents=[pdf_file , prompt]  
         )
 
         print(response.usage_metadata)
