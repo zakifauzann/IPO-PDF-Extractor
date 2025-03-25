@@ -30,7 +30,7 @@ def analyze_text_with_gemini(pdf_path):
 
         EXTRACT THE FOLLOWING INFORMATION:
         
-        Strictly only extract data focusing specifically on the latest Financial Year Ended (FYE) results. Exclude any Financial Period Ended (FPE) data.
+        Strictly only extract data focusing specifically on the latest Financial Year Ended (FYE) results. Exclude any Financial Period Ended (FPE) data. Be careful of unit used in the document, for example RM'000 or RM Million.
 
         1.  **Profit After Tax (PAT) ['000]**:
             * TYou MUST take values of latest FYE.
@@ -47,17 +47,17 @@ def analyze_text_with_gemini(pdf_path):
             * Figures must be in RM'000.
 
         4.  **FPE Period**:
-            * Extract the financial period duration.
-            * 1 - 12
+            * Extract the financial period duration in month.
+            * Calculate the financial period duration in month state the period number only.
             * Example: 9
 
         5.  **PE (Price-to-Earnings Ratio, reported)**:
-            * Extract the officially reported PE ratio.
+            * Extract the officially reported PE ratio of the latest FYE year.
             * Ensure it is represented as a numerical value.
 
         6.  **PAT Margin [%]**:
             * Extract the PAT margin percentage.
-            * Represent as a decimal (e.g., 0.25 for 25%).
+            * Represent as a percentage (e.g. 25 as 25%).
 
         7.  **Total Assets (Pro Forma) ['000]**:
             * Extract total assets under pro forma adjustments.
@@ -130,6 +130,7 @@ def analyze_text_with_gemini(pdf_path):
                 
         17. **Sector:**
             * Determine and specify the company's sector and sub sector.
+            * Find the these keywords in the document.
             * Refer the table below, do not make any assumptions:
             
             Sector          Sub Sector              Definition
