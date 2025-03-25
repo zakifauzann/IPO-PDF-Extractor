@@ -26,11 +26,11 @@ except Exception as e:
 def analyze_text_with_gemini(pdf_path):
     """Send extracted text to Gemini AI and get structured JSON data, with improved error handling."""
     prompt = f"""
-        You are an expert in financial analysis and IPO prospectuses. Your ABSOLUTE TOP PRIORITY is to extract specific information from the provided text and output the response in a STRICTLY VALID JSON format. If information is not found, leave the corresponding field empty or null. You will extract information ONLY from the "Financial Information," "Key Financial Data," "Corporate Information," or similar sections of the IPO prospectus.
+        You are an expert in financial analysis and IPO prospectuses. Your ABSOLUTE TOP PRIORITY is to extract specific information from the provided text and output the response in a STRICTLY VALID JSON format. If information is not found, leave the corresponding field empty or null. Do not calculate or assume any values unless explicitly stated. You will extract information ONLY from the "Financial Information," "Key Financial Data," "Corporate Information," or similar sections of the IPO prospectus.
 
         EXTRACT THE FOLLOWING INFORMATION:
         
-        Strictly only extract data focusing specifically on the latest Financial Year Ended (FYE) results. Exclude any Financial Period Ended (FPE) data. Be careful of unit used in the document, for example RM'000 or RM Million.
+        Strictly only extract data focusing specifically on the latest Financial Year Ended (FYE) results. Exclude any Financial Period Ended (FPE) data. Be careful of unit used in the document, for example RM'000 or RM Million or just simply RM (round off to become RM'000).
 
         1.  **Profit After Tax (PAT) ['000]**:
             * TYou MUST take values of latest FYE.
@@ -68,7 +68,7 @@ def analyze_text_with_gemini(pdf_path):
             * Figures must be in RM'000.
 
         9.  **Total Cash ['000]**:
-            * Extract the latest total cash available.
+            * Extract the latest total cash available in current assets section.
             * Figures must be in RM'000.
 
         10. **Total Interest-Bearing Borrowings ['000]**:
@@ -78,7 +78,7 @@ def analyze_text_with_gemini(pdf_path):
         11. **Use of Proceeds**:
             * Extract detailed breakdown of IPO proceeds.
             * For category choose between these: Business Expansion, Debt Repayment, Working Capital, Listing Expenses and Others. 
-            * Each entry must include:
+            * Each entry must accurately include without any round-off:
                 - **Category** (e.g., Expansion, Debt Repayment)
                 - **Purpose**
                 - **Amount (RM'000)**
@@ -126,169 +126,169 @@ def analyze_text_with_gemini(pdf_path):
                 - **Ownership Percentage**
             * Classify ownership as:
                 - **Subsidiaries** (own >= 50%)
-                - **Associates** (own < 50%)
+                - **Associates** (own < 50%)kkkkk
                 
         17. **Sector:**
             * Determine and specify the company's sector and sub sector.
             * Find the these keywords in the document.
             * Refer the table below, do not make any assumptions:
             
-            Sector          Sub Sector              Definition
+            Sector              Sub Sector          Definition
             -----------------------------------------------------------------------------------------------------
-            1               1.1                     Companies engaged in the construction of commercial and
-            CONSTRUCTION    CONSTRUCTION            residential buildings, infrastructure such as railways, highways,
+            1                   1.1                 Companies engaged in the construction of commercial and
+            CONSTRUCTION        CONSTRUCTION        residential buildings, infrastructure such as railways, highways,
                                                     roads and providers of building construction-related services
                                                     such as architects, interior design
             
-            2               2.1                     Companies that raise livestock and operate fisheries. Includes
-            CONSUMER        AGRICULTURAL            manufacturers of livestock feeds
-            PRODUCTS &      PRODUCTS
+            2                   2.1                 Companies that raise livestock and operate fisheries. Includes
+            CONSUMER            AGRICULTURAL        manufacturers of livestock feeds
+            PRODUCTS &          PRODUCTS
             SERVICES
-                            2.2                     Companies that produce and distribute passenger automobiles
-                            AUTOMOTIVE
+                                2.2                 Companies that produce and distribute passenger automobiles
+                                AUTOMOTIVE
             
-                            2.3                     Businesses not covered in the other prescribed sub sectors
-                            CONSUMER                under Consumer Products & Services
-                            SERVICES
+                                2.3                 Businesses not covered in the other prescribed sub sectors
+                                CONSUMER            under Consumer Products & Services
+                                SERVICES
             
-                            2.4                     Food or beverages producers including packaged foods, dairy
-                            FOOD/BEVERAGES          products, brewers, soft drinks
+                                2.4                 Food or beverages producers including packaged foods, dairy
+                                FOOD/BEVERAGES      products, brewers, soft drinks
             
-                            2.5                     Manufacturers and distributors of household products including
-                            HOUSEHOLD GOODS         furniture, kitchenware, consumer electronics
+                                2.5                 Manufacturers and distributors of household products including
+                                HOUSEHOLD GOODS     furniture, kitchenware, consumer electronics
             
-                            2.6                     Manufacturers and distributers of personal products including
-                            PERSONAL GOODS          textiles, apparel, footwear, jewellery, timepieces, accessories,
+                                2.6                 Manufacturers and distributers of personal products including
+                                PERSONAL GOODS      textiles, apparel, footwear, jewellery, timepieces, accessories,
                                                     cosmetics, personal care, tobacco
             
-                            2.7                     Owners and operators of retail stores including direct marketing
-                            RETAILERS
+                                2.7                 Owners and operators of retail stores including direct marketing
+                                RETAILERS
             
-                            2.8                     Companies providing travel and tourism related services
-                            TRAVEL, LEISURE &       includes airlines, gambling, hotels, restaurants and recreational
-                            HOSPITALITY             services
+                                2.8                 Companies providing travel and tourism related services
+                                TRAVEL, LEISURE &   includes airlines, gambling, hotels, restaurants and recreational
+                                HOSPITALITY         services
             
-            3               3.1                     Suppliers of equipment and services to oil and gas producers
-            ENERGY          ENERGY                  such as drilling, exploration, platform construction
-                            INFRASTRUCTURE,
-                            EQUIPMENT &
-                            SERVICES
+            3                   3.1                 Suppliers of equipment and services to oil and gas producers
+            ENERGY              ENERGY              such as drilling, exploration, platform construction
+                                INFRASTRUCTURE,
+                                EQUIPMENT &
+                                SERVICES
             
-                            3.2                     Companies engaged in the exploration and production of oil and
-                            OIL & GAS               gas
-                            PRODUCERS
+                                3.2                 Companies engaged in the exploration and production of oil and
+                                OIL & GAS           gas
+                                PRODUCERS
             
-                            3.3                     Companies that produce alternative energy including alternative
-                            OTHER ENERGY            fuels
-                            RESOURCES
+                                3.3                 Companies that produce alternative energy including alternative
+                                OTHER ENERGY        fuels
+                                RESOURCES
             
-                            3.4                     Companies that provide equipment and services involved in
-                            RENEWABLE ENERGY        producing renewable energy
+                                3.4                 Companies that provide equipment and services involved in
+                                RENEWABLE ENERGY    producing renewable energy
             
             -----------------------------------------------------------------------------------------------------
             
-            Sector          Sub Sector              Definition
+            Sector              Sub Sector          Definition
             -----------------------------------------------------------------------------------------------------
-            4               4.1                     Banks providing a broad range of financial services, including
-            FINANCIAL       ΒΑΝΚING                 retail banking, loans and money transmissions
+            4                   4.1                 Banks providing a broad range of financial services, including
+            FINANCIAL           ΒΑΝΚING             retail banking, loans and money transmissions
             SERVICES
+        
+                                4.2                 Insurance companies with products in life, health, property and
+                                INSURANCE           casualty insurance, takaful
             
-                            4.2                     Insurance companies with products in life, health, property and
-                            INSURANCE               casualty insurance, takaful
-            
-                            4.3                     Companies engaged in financial activities not specified
-                            OTHER                   elsewhere, include stock exchanges, securities, asset
-                            FINANCIALS              management companies and other service providers to financial
+                                4.3                 Companies engaged in financial activities not specified
+                                OTHER               elsewhere, include stock exchanges, securities, asset
+                                FINANCIALS          management companies and other service providers to financial
                                                     institutions
             
-            5               5.1                     Manufacturers and distributors of health care equipment and
-            HEALTH CARE     HEALTH CARE             providers of health care services includes lab testing services,
-                            EQUIPMENT &             dialysis centers
-                            SERVICES
+            5                   5.1                 Manufacturers and distributors of health care equipment and
+            HEALTH CARE         HEALTH CARE         providers of health care services includes lab testing services,
+                                EQUIPMENT &         dialysis centers
+                                SERVICES
             
-                            5.2                     Owners and operators of health care facilities including
-                            HEALTH CARE             hospitals, clinics, nursing homes, rehabilitation centres
-                            PROVIDERS
+                                5.2                 Owners and operators of health care facilities including
+                                HEALTH CARE         hospitals, clinics, nursing homes, rehabilitation centres
+                                PROVIDERS
             
-                            5.3                     Companies engaged in the research, development, production
-                            PHARMACEUTICALS         or distribution of pharmaceuticals
+                                5.3                 Companies engaged in the research, development, production
+                                PHARMACEUTICALS     or distribution of pharmaceuticals
             
-            6               6.1                     Manufacturers and distributors of parts and accessories for
-            INDUSTRIAL      AUTO PARTS              automobiles and motorcycles such as tires, batteries, engines
+            6                   6.1                 Manufacturers and distributors of parts and accessories for
+            INDUSTRIAL          AUTO PARTS          automobiles and motorcycles such as tires, batteries, engines
             PRODUCTS &
             SERVICES
             
-                            6.2                     Manufacturers and wholesalers of building materials including
-                            BUILDING                cement, concrete, tiles and paint
-                            MATERIALS
+                                6.2                 Manufacturers and wholesalers of building materials including
+                                BUILDING            cement, concrete, tiles and paint
+                                MATERIALS
             
-                            6.3                     Companies that primarily produce and distribute chemicals for
-                            CHEMICALS               industry use. Includes plastics and rubber in their raw form or
+                                6.3                 Companies that primarily produce and distribute chemicals for
+                                CHEMICALS           industry use. Includes plastics and rubber in their raw form or
                                                     molded plastic products, polymers, adhesives, dyes, coatings
                                                     and other chemicals for specialised applications
             
-                            6.4                     Diversified companies with business activities in three or more
-                            DIVERSIFIED             sectors of which none contributes substantial revenue
-                            INDUSTRIALS
+                                6.4                 Diversified companies with business activities in three or more
+                                DIVERSIFIED         sectors of which none contributes substantial revenue
+                                INDUSTRIALS
             
-                            6.5                     Manufacturers and distributors of heavy machinery and
-                            INDUSTRIAL              engineering equipment
-                            ENGINEERING
+                                6.5                 Manufacturers and distributors of heavy machinery and
+                                INDUSTRIAL          engineering equipment
+                                ENGINEERING
             
-                            6.6                     Manufacturers and distributors of industrial machinery and
-                            INDUSTRIAL              components which includes machine tools, castings and
-                            MATERIALS,              moulding equipment, presses, compressors, elevators and
-                            COMPONENTS &            escalators
-                            EQUIPMENT
+                                6.6                 Manufacturers and distributors of industrial machinery and
+                                INDUSTRIAL          components which includes machine tools, castings and
+                                MATERIALS,          moulding equipment, presses, compressors, elevators and
+                                COMPONENTS &        escalators
+                                EQUIPMENT
             
             -----------------------------------------------------------------------------------------------------
             
-            Sector          Sub Sector              Definition
+            Sector              Sub Sector              Definition
             -----------------------------------------------------------------------------------------------------
-            7               6.7                     Businesses not covered in the other prescribed sub sectors
-            PLANTATION      INDUSTRIAL              under Industrial Products & Services
-                            SERVICES
+            7                   6.7                 Businesses not covered in the other prescribed sub sectors
+            PLANTATION          INDUSTRIAL          under Industrial Products & Services
+                                SERVICES
             
-                            6.8                     Producers and traders of metals and metal products which
-                            METALS                  includes iron, aluminium and steel
+                                6.8                 Producers and traders of metals and metal products which
+                                METALS              includes iron, aluminium and steel
             
-                            6.9                     Manufacturers & distributors of paper, containers, cardboard,
-                            PACKAGING               bags, boxes and cans used for packaging
-                            MATERIALS
+                                6.9                 Manufacturers & distributors of paper, containers, cardboard,
+                                PACKAGING           bags, boxes and cans used for packaging
+                                MATERIALS
             
-                            6.10                    Manufacturers and distributors of timber and related wood
-                            WOOD AND WOOD           products
-                            PRODUCTS
+                                6.10                Manufacturers and distributors of timber and related wood
+                                WOOD AND WOOD       products
+                                PRODUCTS
             
-            8               7.1                     Companies engaged in the cultivation, planting and/or replanting
-            PROPERTY        PLANTATION              of crops
+            8                   7.1                 Companies engaged in the cultivation, planting and/or replanting
+            PROPERTY            PLANTATION          of crops
             
-                            8.1                     Companies that invest in real estate through development,
-                            PROPERTY                investment and ownership including real estate service providers
+                                8.1                 Companies that invest in real estate through development,
+                                PROPERTY            investment and ownership including real estate service providers
                                                     such as real estate brokers, agencies, leasing companies,
                                                     management companies and advisory services
             
-            9               9.1                     Real estate investment trusts that focus investment in a portfolio
-            REAL ESTATE     REAL ESTATE             of income-generating properties such as shopping malls, hotels,
-            INVESTMENT      INVESTMENT              offices and service apartments
-            TRUSTS          TRUSTS
+            9                   9.1                 Real estate investment trusts that focus investment in a portfolio
+            REAL ESTATE         REAL ESTATE         of income-generating properties such as shopping malls, hotels,
+            INVESTMENT          INVESTMENT          offices and service apartments
+            TRUSTS              TRUSTS
             
-            10              10.1                    Companies providing internet-related services such as Internet
-            TECHNOLOGY      DIGITAL                 access providers, search engines and providers of website
-                            SERVICES                design, web hosting and e-mail services including companies
+            10                  10.1                Companies providing internet-related services such as Internet
+            TECHNOLOGY          DIGITAL             access providers, search engines and providers of website
+                                SERVICES            design, web hosting and e-mail services including companies
                                                     that provide solutions and platforms for e-commerce or
                                                     electronic payments
             
-                            10.2                    Companies engaged in the manufacturing and distribution of
-                            SEMICONDUCTORS          semiconductors and semiconductor equipment
+                                10.2                Companies engaged in the manufacturing and distribution of
+                                SEMICONDUCTORS      semiconductors and semiconductor equipment
             
-                            10.3                    Companies engaged in developing and producing software
-                            SOFTWARE                designed for specialised application such as systems software,
+                                10.3                Companies engaged in developing and producing software
+                                SOFTWARE            designed for specialised application such as systems software,
                                                     enterprise and technical software, mobile application
             
-                            10.4                    Manufacturers and distributors of technology hardware and
-                            TECHNOLOGY              equipment such as computers, servers, mainframes,
-                            EQUIPMENT               workstations and related peripherals such as mass-storage
+                                10.4                Manufacturers and distributors of technology hardware and
+                                TECHNOLOGY          equipment such as computers, servers, mainframes,
+                                EQUIPMENT           workstations and related peripherals such as mass-storage
                                                     drives, motherboards, monitors, keyboards, printers, smartcards
             
             -----------------------------------------------------------------------------------------------------
@@ -432,7 +432,7 @@ def analyze_text_with_gemini(pdf_path):
 
 if __name__ == "__main__":
     # Specify the PDF path here:
-    pdf_path = os.path.join('hi_abridged.pdf')  # Replace with the actual path to your PDF file
+    pdf_path = os.path.join('3ren_abridged.pdf')  # Replace with the actual path to your PDF file
 
     if not os.path.exists(pdf_path):
         print(f"Error: PDF file '{pdf_path}' not found.")
