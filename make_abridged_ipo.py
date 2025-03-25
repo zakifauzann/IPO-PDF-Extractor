@@ -8,6 +8,7 @@ possible_keywords = [ "executive", "director" ,"senior management", "corporate s
                     "revenue by business segments"
                     "corporate info" , "salary" , "remuneration",
 
+                    "business overview",
                     "imr report",
                     "directors remuneration and benefits",
 
@@ -136,7 +137,7 @@ def get_tableofcontents(filename):
 
 # Example usage:
 if __name__ == '__main__':
-    pdf_file_path =  os.path.join("pdf", "msbpdf.pdf")  # Replace with your PDF file path
+    pdf_file_path =  os.path.join("pdf", "HI.pdf")  # Replace with your PDF file path
     page_titles = extract_titles_from_pdf(pdf_file_path)
     page_numbers = split_into_sections(page_titles)
     # get_tableofcontents(pdf_file_path)
