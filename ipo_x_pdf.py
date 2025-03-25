@@ -68,7 +68,8 @@ def analyze_text_with_gemini(pdf_path):
             * Figures must be in RM'000.
 
         9.  **Total Cash ['000]**:
-            * Extract the latest total cash available in current assets section.
+            * Extract the latest total cash available 
+            * Try to find these values in current assets section (e.g. Cash and Bank Balance).
             * Figures must be in RM'000.
 
         10. **Total Interest-Bearing Borrowings ['000]**:
@@ -349,7 +350,7 @@ def analyze_text_with_gemini(pdf_path):
                                 CONVENTIONAL-PDS    on the stock market
             
             -----------------------------------------------------------------------------------------------------
-            
+
             Sector              Sub Sector          Definition
             -----------------------------------------------------------------------------------------------------
             17                  17.1                Shariah Compliant fixed income securities that are listed and
@@ -432,7 +433,7 @@ def analyze_text_with_gemini(pdf_path):
 
 if __name__ == "__main__":
     # Specify the PDF path here:
-    pdf_path = os.path.join('3ren_abridged.pdf')  # Replace with the actual path to your PDF file
+    pdf_path = os.path.join('dengkil_abridged.pdf')  # Replace with the actual path to your PDF file
 
     if not os.path.exists(pdf_path):
         print(f"Error: PDF file '{pdf_path}' not found.")
