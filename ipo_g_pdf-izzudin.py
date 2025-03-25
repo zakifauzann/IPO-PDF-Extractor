@@ -27,56 +27,444 @@ except Exception as e:
 def analyze_pdf_with_gemini(pdf_path):
     """Send pdf to Gemini AI and get structured JSON data, with improved error handling."""
     prompt = """
-   You are an expert in financial analysis and annual reports. Your ABSOLUTE TOP PRIORITY is to extract specific information from the provided text and output the response in a STRICTLY VALID JSON format. If information is not found, leave the corresponding field empty or null.
- You are an expert in financial analysis and annual reports. Your ABSOLUTE TOP PRIORITY is to extract specific information from the provided text and output the response in a STRICTLY VALID JSON format. If information is not found, leave the corresponding field empty or null.
+     You are an expert in financial analysis and IPO prospectuses. Your ABSOLUTE TOP PRIORITY is to extract specific information from the provided text and output the response in a STRICTLY VALID JSON format. If information is not found, leave the corresponding field empty or null. Do not calculate or assume any values unless explicitly stated. You will extract information ONLY from the "Financial Information," "Key Financial Data," "Corporate Information," or similar sections of the IPO prospectus.
 
-EXTRACT THE FOLLOWING INFORMATION: 
+        EXTRACT THE FOLLOWING INFORMATION:
+        
+        Strictly only extract data focusing specifically on the latest Financial Year Ended (FYE) results. Exclude any Financial Period Ended (FPE) data. Be careful of unit used in the document, for example RM'000 or RM Million or just simply RM (round off to become RM'000).
 
-    1. Use of proceeds 
-        - might be stated as "utilisation of proceeds" or similar.
+        1.  **Profit After Tax (PAT) ['000]**:
+            * TYou MUST take values of latest FYE.
+            * Ensure all figures are in RM'000 (Ringgit Malaysia thousands).
 
-    2. **Executive Directors**: (title, name, age, and total remuneration (salary, bonuses, other compensation, if available)).
-        *   If age is not explicitly stated, do not include it.
-        *   For salary, if there are multiple sources of remuneration (e.g., from the company and a group entity), sum all applicable amounts and report the total remuneration. Specify the currency.
-        *   If total remuneration is not available or cannot be reliably calculated, set the `total_remuneration` to `null`.
-        *   Include Chairman, Managing Director, CEO,COO, CFO and Exceutive Directors. Ignore Non-Executive Directors
+        2.  **PAT (FYE) List ['000, comma-separated]**:
+            * Extract all available PAT values for Financial Year End (FYE).
+            * Ensure values are formatted as a comma-separated list.
+            * Figures must be in RM'000.
 
-    3. **Geographical Segments/Geographical Information**: (name, total revenue, and percentage of total revenue).   Strictly only extract data for the latest FYE (Ignore FPE)
-    *   Strictly only extract data focusing specifically on the latest Financial Year Ended (FYE) results. Exclude any Financial Period Ended (FPE) data.
-        *   Extract data ONLY from the "Geographical Segments" or "Geographical Information" section within the "Notes To The Financial Statements."
-        *   Extract the revenue by geographical location from the annual report. This information is typically located in the notes to the financial statements, often under a section titled "Segment Reporting," "Operating Segments," or "Geographical Segments."
-        *   The revenue should be broken down by geographical regions, and the values are expected to be in RM'000
-        *   Extract directly from table rows if the data is presented in a table format.
-        *   **CRITICAL:** If a table with geographical segments information is absent in the "Notes To The Financial Statements", set the entire "Geographical Segments" value to `null`. Do NOT use information from other sections of the report.
-        *   Ignore rows or segments marked with "-". If a segment is ignored, do not include the corresponding key-value pair.
+        3.  **PAT (FPE) List ['000, comma-separated]**:
+            * Extract all available PAT values for Financial Period End (FPE).
+            * Ensure values are formatted as a comma-separated list.
+            * Figures must be in RM'000.
 
-    4. **Business Segments**: (name, external revenue, total revenue, and percentage of total revenue).   Strictly only extract data for the latest FYE (Ignore FPE)
-    *   Strictly only extract data focusing specifically on the latest Financial Year Ended (FYE) results. Exclude any Financial Period Ended (FPE) data.
-        *   From the "Segment Information" table in the "Notes to the Financial Statements" section, extract the total revenue for each business segment. List each business segment along with its corresponding total revenue per segment. 
-        *   Get the total revenue per business segment as well, total revenue is usually situated below the external revenue
-        *   The values are expected to be in RM'000 , note the currency used in the currency_unit
-        *   **CRITICAL:** You MUST find a section titled "Business Segments," "Business Information," or "Segment Information" in the "Notes To The Financial Statements" section of the annual report.
-        *   **AVOID**: Do NOT use numbers from *Review of Performance* or *Review of Financial Performance*.
-        *   Treat "-" as 0 (zero). If a business segment has zero revenue, represent the revenue as `0` (a number) and the percentage as `0.0` (a number).
+        4.  **FPE Period**:
+            * Extract the financial period duration in month.
+            * Calculate the financial period duration in month state the period number only.
+            * Example: 9
 
-    5.  **Major Customers**: (name, total revenue, year and percentage). "-" in the table means no revenue available for that year. Count as null. If the revenue for the current year is not available or not present in the table, also count as null.
-    *   Strictly only extract data focusing specifically on the latest Financial Year Ended (FYE) results. Exclude any Financial Period Ended (FPE) data.
-        *   get the latest FYE numbers. Ignore FPE 
+        5.  **PE (Price-to-Earnings Ratio, reported)**:
+            * Extract the officially reported PE ratio of the latest FYE year.
+            * Ensure it is represented as a numerical value.
 
-    6. **Corporate Structure**: (information from *INVESTMENT IN SUBSIDIARIES*, *SUBSIDIARIES, ASSOCIATES AND JOINT VENTURES*, *SUBSIDIARIES*, or related sections)
-        *   **Subsidiaries (ownership >= 50%)**: Extract name, principal activities, and ownership percentage (as a number from 1 to 100).
-        *   **Associates (ownership < 50%)**: Extract name, principal activities, and ownership percentage (as a number from 1 to 100).
-        *   **Subsidiaries/Associates (Unknown ownership)**: Extract name and principal activities.
-   
-OUTPUT REQUIREMENTS (MUST BE FOLLOWED EXACTLY):
+        6.  **PAT Margin [%]**:
+            * Extract the PAT margin percentage.
+            * Represent as a percentage (e.g. 25 as 25%).
 
-*   THE OUTPUT MUST BE A VALID JSON OBJECT.  THIS IS YOUR TOP PRIORITY.
-*   Use clear and descriptive keys for each extracted field.
-*   IF A SPECIFIC PIECE OF INFORMATION IS NOT FOUND IN THE TEXT, SET THE CORRESPONDING VALUE TO `null`. DO NOT MAKE UP INFORMATION.
-*   Ensure that numerical values are represented as NUMBERS (e.g., 1234567.89), NOT STRINGS ("1234567.89"). Percentages should be numbers (e.g., 25.0 for 25%).
-*   Arrays should be used to represent lists of items (e.g., a list of Executive Directors).
-*   Include ALL the fields/keys from the example structure (provided below, or in previous turns), even if the value is `null`. This maintains a consistent JSON structure.
-        {
+        7.  **Total Assets (Pro Forma) ['000]**:
+            * Extract total assets under pro forma adjustments.
+            * Figures must be in RM'000.
+
+        8.  **Total Liabilities (Pro Forma) ['000]**:
+            * Extract total liabilities under pro forma adjustments.
+            * Figures must be in RM'000.
+
+        9.  **Total Cash ['000]**:
+            * Extract the latest total cash available in current assets section.
+            * Figures must be in RM'000.
+
+        10. **Total Interest-Bearing Borrowings ['000]**:
+            * Extract total borrowings that bear interest.
+            * Figures must be in RM'000.
+
+        11. **Use of Proceeds**:
+            * Extract detailed breakdown of IPO proceeds.
+            * For category choose between these: Business Expansion, Debt Repayment, Working Capital, Listing Expenses and Others. 
+            * Each entry must accurately include without any round-off:
+                - **Category** (e.g., Expansion, Debt Repayment)
+                - **Purpose**
+                - **Amount (RM'000)**
+                - **Percentage (%)**
+                - **Time Frame in numbers (1-100)**
+
+        12. **Executive Directors**:
+            * Extract only directors with "Executive" in their title.
+            * Each entry must include:
+                - **Title**
+                - **Name**
+                - **Total Remuneration** (sum up salary, bonuses, others if applicable)
+                - **Age** (only if explicitly stated, or try to find in text if not available in table; do not estimate)
+
+        13. **Geographical Segments**:
+            * Extract total revenue per geographical segment.
+            * You MUST take values of latest FYE (search values under the latest FYE year).
+            * You MUST use the values of the TOTAL revenues.
+            * You MUST calculate the percentage based on the total revenue.
+            * If the segment data is not found, return null.
+            * Figures must be in RM'000.
+
+        14. **Business Segments**:
+            * Extract total revenue per business segment.
+            * You MUST take values of latest FYE (search values under the latest FYE year).
+            * You MUST use the values of the TOTAL revenues.
+            * You MUST calculate the percentage based on the total revenue.
+            * If the segment data is not found, return null.
+            * Figures must be in RM'000.
+
+        15. **Major Customers**:
+        * Extract major customers and their total revenue contribution.
+        * Take values of latest FYE.
+        * Each entry must include:
+            - **Name/Segment**
+            - **Total Revenue (RM'000)**
+            - **Percentage (%)**
+        * If a table states "-" for revenue, consider it null.
+
+        16. **Corporate Structure**:
+            * Extract details on subsidiaries and associates.
+            * Each entry must include:
+                - **Name**
+                - **Principal Activities**
+                - **Ownership Percentage**
+            * Classify ownership as:
+                - **Subsidiaries** (own >= 50%)
+                - **Associates** (own < 50%)kkkkk
+                
+        17. **Sector:**
+            * Determine and specify the company's sector and sub sector.
+            * Find the these keywords in the document.
+            * Refer the table below, do not make any assumptions:
+            
+            Sector              Sub Sector          Definition
+            -----------------------------------------------------------------------------------------------------
+            1                   1.1                 Companies engaged in the construction of commercial and
+            CONSTRUCTION        CONSTRUCTION        residential buildings, infrastructure such as railways, highways,
+                                                    roads and providers of building construction-related services
+                                                    such as architects, interior design
+            
+            2                   2.1                 Companies that raise livestock and operate fisheries. Includes
+            CONSUMER            AGRICULTURAL        manufacturers of livestock feeds
+            PRODUCTS &          PRODUCTS
+            SERVICES
+                                2.2                 Companies that produce and distribute passenger automobiles
+                                AUTOMOTIVE
+            
+                                2.3                 Businesses not covered in the other prescribed sub sectors
+                                CONSUMER            under Consumer Products & Services
+                                SERVICES
+            
+                                2.4                 Food or beverages producers including packaged foods, dairy
+                                FOOD/BEVERAGES      products, brewers, soft drinks
+            
+                                2.5                 Manufacturers and distributors of household products including
+                                HOUSEHOLD GOODS     furniture, kitchenware, consumer electronics
+            
+                                2.6                 Manufacturers and distributers of personal products including
+                                PERSONAL GOODS      textiles, apparel, footwear, jewellery, timepieces, accessories,
+                                                    cosmetics, personal care, tobacco
+            
+                                2.7                 Owners and operators of retail stores including direct marketing
+                                RETAILERS
+            
+                                2.8                 Companies providing travel and tourism related services
+                                TRAVEL, LEISURE &   includes airlines, gambling, hotels, restaurants and recreational
+                                HOSPITALITY         services
+            
+            3                   3.1                 Suppliers of equipment and services to oil and gas producers
+            ENERGY              ENERGY              such as drilling, exploration, platform construction
+                                INFRASTRUCTURE,
+                                EQUIPMENT &
+                                SERVICES
+            
+                                3.2                 Companies engaged in the exploration and production of oil and
+                                OIL & GAS           gas
+                                PRODUCERS
+            
+                                3.3                 Companies that produce alternative energy including alternative
+                                OTHER ENERGY        fuels
+                                RESOURCES
+            
+                                3.4                 Companies that provide equipment and services involved in
+                                RENEWABLE ENERGY    producing renewable energy
+            
+            -----------------------------------------------------------------------------------------------------
+            
+            Sector              Sub Sector          Definition
+            -----------------------------------------------------------------------------------------------------
+            4                   4.1                 Banks providing a broad range of financial services, including
+            FINANCIAL           ΒΑΝΚING             retail banking, loans and money transmissions
+            SERVICES
+        
+                                4.2                 Insurance companies with products in life, health, property and
+                                INSURANCE           casualty insurance, takaful
+            
+                                4.3                 Companies engaged in financial activities not specified
+                                OTHER               elsewhere, include stock exchanges, securities, asset
+                                FINANCIALS          management companies and other service providers to financial
+                                                    institutions
+            
+            5                   5.1                 Manufacturers and distributors of health care equipment and
+            HEALTH CARE         HEALTH CARE         providers of health care services includes lab testing services,
+                                EQUIPMENT &         dialysis centers
+                                SERVICES
+            
+                                5.2                 Owners and operators of health care facilities including
+                                HEALTH CARE         hospitals, clinics, nursing homes, rehabilitation centres
+                                PROVIDERS
+            
+                                5.3                 Companies engaged in the research, development, production
+                                PHARMACEUTICALS     or distribution of pharmaceuticals
+            
+            6                   6.1                 Manufacturers and distributors of parts and accessories for
+            INDUSTRIAL          AUTO PARTS          automobiles and motorcycles such as tires, batteries, engines
+            PRODUCTS &
+            SERVICES
+            
+                                6.2                 Manufacturers and wholesalers of building materials including
+                                BUILDING            cement, concrete, tiles and paint
+                                MATERIALS
+            
+                                6.3                 Companies that primarily produce and distribute chemicals for
+                                CHEMICALS           industry use. Includes plastics and rubber in their raw form or
+                                                    molded plastic products, polymers, adhesives, dyes, coatings
+                                                    and other chemicals for specialised applications
+            
+                                6.4                 Diversified companies with business activities in three or more
+                                DIVERSIFIED         sectors of which none contributes substantial revenue
+                                INDUSTRIALS
+            
+                                6.5                 Manufacturers and distributors of heavy machinery and
+                                INDUSTRIAL          engineering equipment
+                                ENGINEERING
+            
+                                6.6                 Manufacturers and distributors of industrial machinery and
+                                INDUSTRIAL          components which includes machine tools, castings and
+                                MATERIALS,          moulding equipment, presses, compressors, elevators and
+                                COMPONENTS &        escalators
+                                EQUIPMENT
+            
+            -----------------------------------------------------------------------------------------------------
+            
+            Sector              Sub Sector              Definition
+            -----------------------------------------------------------------------------------------------------
+            7                   6.7                 Businesses not covered in the other prescribed sub sectors
+            PLANTATION          INDUSTRIAL          under Industrial Products & Services
+                                SERVICES
+            
+                                6.8                 Producers and traders of metals and metal products which
+                                METALS              includes iron, aluminium and steel
+            
+                                6.9                 Manufacturers & distributors of paper, containers, cardboard,
+                                PACKAGING           bags, boxes and cans used for packaging
+                                MATERIALS
+            
+                                6.10                Manufacturers and distributors of timber and related wood
+                                WOOD AND WOOD       products
+                                PRODUCTS
+            
+            8                   7.1                 Companies engaged in the cultivation, planting and/or replanting
+            PROPERTY            PLANTATION          of crops
+            
+                                8.1                 Companies that invest in real estate through development,
+                                PROPERTY            investment and ownership including real estate service providers
+                                                    such as real estate brokers, agencies, leasing companies,
+                                                    management companies and advisory services
+            
+            9                   9.1                 Real estate investment trusts that focus investment in a portfolio
+            REAL ESTATE         REAL ESTATE         of income-generating properties such as shopping malls, hotels,
+            INVESTMENT          INVESTMENT          offices and service apartments
+            TRUSTS              TRUSTS
+            
+            10                  10.1                Companies providing internet-related services such as Internet
+            TECHNOLOGY          DIGITAL             access providers, search engines and providers of website
+                                SERVICES            design, web hosting and e-mail services including companies
+                                                    that provide solutions and platforms for e-commerce or
+                                                    electronic payments
+            
+                                10.2                Companies engaged in the manufacturing and distribution of
+                                SEMICONDUCTORS      semiconductors and semiconductor equipment
+            
+                                10.3                Companies engaged in developing and producing software
+                                SOFTWARE            designed for specialised application such as systems software,
+                                                    enterprise and technical software, mobile application
+            
+                                10.4                Manufacturers and distributors of technology hardware and
+                                TECHNOLOGY          equipment such as computers, servers, mainframes,
+                                EQUIPMENT           workstations and related peripherals such as mass-storage
+                                                    drives, motherboards, monitors, keyboards, printers, smartcards
+            
+            -----------------------------------------------------------------------------------------------------
+            
+            Sector              Sub Sector          Definition
+            -----------------------------------------------------------------------------------------------------
+            11                  11.1                Companies providing advertising, public relations and marketing
+            TELECOMMUNICATIONS  MEDIA               services includes producers, operators and broadcasters of
+            & MEDIA                                 radio, television, music and filmed entertainment, publishers of
+                                                    information via printed or electronic media
+            
+                                11.2                Producers and distributors of telecommunication equipment
+                                TELECOMMUNICATIONS  such as satelites, LANs, WANs, routers, mobile telephones,
+                                EQUIPMENT           fibers optics, teleconferencing equipment
+            
+                                11.3                Providers of mobile and fixed-line telecommunication networks
+                                TELECOMMUNICATIONS  and providers of satelite and wireless data communication
+                                SERVICE             solutions and related services
+                                PROVIDERS
+            
+            12                  12.1                Companies providing transportation services including
+            TRANSPORTATION      TRANSPORTATION      companies that manage airports, train depots, ports and
+            & LOGISTICS         & LOGISTICS         providers of courier and logistic services
+                                SERVICES
+            
+                                12.2                Manufacturers and distributors of transportation equipment
+                                TRANSPORTATION      includes shipbuilding
+                                EQUIPMENT
+            
+            13                  13.1                Companies that produce or distribute electricity
+            UTILITIES           ELECTRICITY
+            
+                                13.2                Companies providing water or distribute gas to end-users or
+                                GAS, WATER &        utility companies with significant presence in more than one
+                                MULTI-UTILITIES     utility
+            
+                                13.3                Companies that produce or distribute electricity through a
+                                RENEWABLE ENERGY    renewable energy source
+                                ELECTRICITY
+            
+            14                  14.1                Close-ended investment entities
+            CLOSED END FUND     CLOSED END FUND
+            
+            15                  15.1                Special purpose acquisition companies
+            SPECIAL             SPECIAL
+            PURPOSE             PURPOSE
+            ACQUISITION         ACQUISITION
+            COMPANY             COMPANY
+            
+            16                  16.1                Conventional fixed income securities that are listed and traded
+            BOND                CONVENTIONAL-MGS    on the stock market
+            CONVENTIONAL
+            
+                                16.2                Conventional fixed income securities that are listed and traded
+                                CONVENTIONAL-GG     on the stock market
+            
+                                16.3                Conventional fixed income securities that are listed and traded
+                                CONVENTIONAL-PDS    on the stock market
+            
+            -----------------------------------------------------------------------------------------------------
+            
+            Sector              Sub Sector          Definition
+            -----------------------------------------------------------------------------------------------------
+            17                  17.1                Shariah Compliant fixed income securities that are listed and
+            BOND ISLAMIC        ISLAMIC-GII         traded on the stock market
+            
+                                17.2                Shariah Compliant fixed income securities that are listed and
+                                ISLAMIC-GG          traded on the stock market
+            
+                                17.3                Shariah Compliant fixed income securities that are listed and
+                                ISLAMIC-PDS         traded on the stock market
+            
+            18                  18.1                Open-ended investment entities
+            EXCHANGE            COMMODITY FUND
+            TRADED FUND-
+            COMMODITY
+            
+            19                  19.1                Open-ended investment entities
+            EXCHANGE            EQUITY FUND
+            TRADED FUND-
+            EQUITY
+            
+            20                  20.1                Open-ended investment entities
+            EXCHANGE            BOND FUND
+            TRADED FUND-
+            BOND
+            
+            21                  21.1                Business enterprises that are set up as trust, instead of
+            BUSINESS            BUSINESS TRUST      companies. They are hybrid structures with elements of both
+            TRUST                                   companies and trusts and created by a trust deed
+
+        OUTPUT REQUIREMENTS (MUST BE FOLLOWED EXACTLY):
+
+        *   THE OUTPUT MUST BE A VALID JSON OBJECT. THIS IS YOUR TOP PRIORITY.
+        *   Use clear and descriptive keys for each extracted field.
+        *   IF A SPECIFIC PIECE OF INFORMATION IS NOT FOUND IN THE TEXT, SET THE CORRESPONDING VALUE TO `null`. DO NOT MAKE UP INFORMATION.
+        *   Ensure that numerical values are represented as NUMBERS (e.g., 1234567.89), NOT STRINGS ("1234567.89").
+        *   Percentages should be represented as decimals (e.g., 0.25 for 25%).
+        *   Arrays should be used to represent lists of items (e.g., a list of Executive Directors).
+        *   Include ALL the fields from the example, even if the value is `null`.
+
+    Section B: Extract the following fields  
+           
+            "Name": "Company name",
+            "Website": "Company website address",
+            "Summary": "Brief summary of the company",
+            "Code": null,
+            "Symbol": null,
+            "Market Type": "ACE/LEAP/Main",
+            "Adviser": "Adviser's name",
+            "Issuing House": "Issuing house name",
+            "Last Exposure Date (Draft Prospectus)": "DD MMMM YYYY",
+            "Pre Shariah (Publish)": null,
+            "Pre Shariah (BIS)": null,
+            "Pre Shariah (SC)": "COMPLIANT/NOT-COMPLIANT",
+            "Pre Shariah Ratio": null,
+            "Closing Date": "DD MMMM YYYY",
+            "Balloting Date": "DD MMMM YYYY",
+            "Listing Date": "DD MMMM YYYY",
+            "Listing Price": float,
+            "Num of Shares (Enlarged) [M]": float,
+            "New Shares Issued [M]": float,
+            "Existing Shares Offered For Sale [M]": float,
+            "IPO Shares Breakdown of the Enlarged Share": {
+                "Eligible Directors & Employees [M]": float,
+                "Malaysian Public [M]": float,
+                "MITI [M]": float,
+                "Others (Private placements, etc.) [M]": float
+            },
+            "Utilisation of Proceeds - Debt Funding [%]": float,
+            "Utilisation of Proceeds - Debt Funding ['000]": int,
+
+    ---
+    For Pro Forma related items, extract data from *PRO FORMA CONSOLIDATED STATEMENTS OF FINANCIAL POSITION* table
+            "Profit After Tax (PAT) ['000]": int (Take Latest Financial Year Ended (FYE)),
+            "PAT (FYE) List ['000, comma-separated]": "Comma-separated values",
+            "PAT (FPE) List ['000, comma-separated]": "Comma-separated values (if available)",
+            "FPE Period": "Period ending MM-DD",
+            "PE (reported)": float,
+            "PAT Margin [%]": float (Take Latest Financial Year Ended (FYE)),
+            "Total Assets (Pro Forma) ['000]": int (TOTAL ASSETS for pro forma ii),
+            "Total Liabilities (Pro Forma) ['000]": int,
+            "Total Cash ['000]": int (Total Cash and Bank Balances),
+            "Total Interest-Bearing Borrowings ['000]": int,
+    ---
+            "Bursa Peers (from IMR section)": "Comma-separated list",
+            "International Peers (from IMR section)": "Comma-separated list",
+            "MITI Application Open Date": "DD MMMM YYYY",
+            "MITI Application Close Date": "DD MMMM YYYY",
+            "MITI Payment & 2nd Document Submission Date": "DD MMMM YYYY",
+            "Oversubscription": "Oversubscription value",
+            "Price 1st Day (Open, Close)": "Opening and closing prices"
+    ---
+
+Output Requirements (Must Be Followed Exactly)  
+
+- VALID JSON FORMAT: This is your top priority. Ensure the output is a strictly valid JSON object.  
+- Numerical Values: Represent as numbers, not strings (e.g., 1234567.89). Percentages should be numbers (e.g., 25.0 for 25%).  
+- Arrays: Use arrays for lists (e.g., Executive Directors).  
+- Missing Information: If a field is not found, set it to `null`. Do not fabricate information.  
+- Consistency: Maintain all keys/fields from the sample JSON structure, even if values are `null`.     
+
+Sample output:
+
+{
+        "use_of_proceeds": [
+            {
+            "Category": "Business Expansion",
+            "Purpose": "Purchase of machineriess",
+            "Amount (RM'000)": 1542,
+            "Percentage (%)": 17.1,
+            "Time Frame in numbers": 12
+        },      
+        ],
+
         "executive_directors": [
             {
             "title": "Chief Executive Officer",
@@ -167,19 +555,59 @@ OUTPUT REQUIREMENTS (MUST BE FOLLOWED EXACTLY):
             }
             ]
         },
-         
-        "use_of_proceeds": [
-            {
-            "purpose" : "reconstruction_of_a_new_factory_cum_warehouse"
-            "amount": 4974000,
-            "percentage": 18.7
+        {
+            "Name": "Company name",
+            "Website": "Company website address",
+            "Summary": "Brief summary of the company",
+            "Code": null,
+            "Symbol": null,
+            "Market Type": "ACE/LEAP/Main",
+            "Adviser": "Adviser's name",
+            "Issuing House": "Issuing house name",
+            "Last Exposure Date (Draft Prospectus)": "DD MMMM YYYY",
+            "Pre Shariah (Publish)": null,
+            "Pre Shariah (BIS)": null,
+            "Pre Shariah (SC)": "COMPLIANT/NOT-COMPLIANT",
+            "Pre Shariah Ratio": null,
+            "Closing Date": "DD MMMM YYYY",
+            "Balloting Date": "DD MMMM YYYY",
+            "Listing Date": "DD MMMM YYYY",
+            "Listing Price": float,
+            "Num of Shares (Enlarged) [M]": float,
+            "New Shares Issued [M]": float,
+            "Existing Shares Offered For Sale [M]": float,
+            "IPO Shares Breakdown of the Enlarged Share": {
+                "Eligible Directors & Employees [M]": float,
+                "Malaysian Public [M]": float,
+                "MITI [M]": float,
+                "Others (Private placements, etc.) [M]": float
             },
-            {
-            "purpose" : "purchase_of_new_machinery_and_equipment"
-            "amount": 6005000,
-            "percentage": 22.58 
-            }        
-        ]
+            "Utilisation of Proceeds - Debt Funding [%]": float,
+            "Utilisation of Proceeds - Debt Funding ['000]": float,
+            "Profit After Tax (PAT) ['000]": int,
+            "PAT (FYE) List ['000, comma-separated]": "Comma-separated values",
+            "PAT (FPE) List ['000, comma-separated]": "Comma-separated values (if available)",
+            "FPE Period": "Period ending MM-DD",
+            "PE (reported)": float,
+            "PAT Margin [%]": float,
+            "Total Assets (Pro Forma) ['000]": int,
+            "Total Liabilities (Pro Forma) ['000]": int,
+            "Total Cash ['000]": int,
+            "Total Interest-Bearing Borrowings ['000]": int,
+            "Notes (Public)": "Additional notes if available",
+            "Broker TP List": "Comma-separated broker target prices",
+            "Broker TP (Median)": float,
+            "Notes on Brokers TP, etc. (Private)": "Additional broker notes",
+            "Business Prospect Score Adjuster": int,
+            "Sectors": "Company sectors",
+            "Bursa Peers (from IMR section)": "Comma-separated list",
+            "International Peers (from IMR section)": "Comma-separated list",
+            "MITI Application Open Date": "DD MMMM YYYY",
+            "MITI Application Close Date": "DD MMMM YYYY",
+            "MITI Payment & 2nd Document Submission Date": "DD MMMM YYYY",
+            "Oversubscription": "Oversubscription value",
+            "Price 1st Day (Open, Close)": "Opening and closing prices"
+        }
   
     }
     """
@@ -189,7 +617,7 @@ OUTPUT REQUIREMENTS (MUST BE FOLLOWED EXACTLY):
         response = client.models.generate_content(
             model="gemini-2.0-flash",
             config=types.GenerateContentConfig(
-                temperature=0.6 # Low temperature for consistent outputs, low randomness
+                temperature=0.5 # Low temperature for consistent outputs, low randomness
             ),
             contents=[
                 types.Part.from_bytes(
@@ -238,7 +666,7 @@ def save_json(structured_data, pdf_path, calc_flag = False):
 
 if __name__ == "__main__":
     # Specify the PDF path here:
-    pdf_path = os.path.join("pdf", "msbpdf.pdf")  # Replace with the actual path to your PDF file
+    pdf_path = os.path.join("pdf", "dengkil.pdf")  # Replace with the actual path to your PDF file
 
     if not os.path.exists(pdf_path):
         print(f"Error: PDF file '{pdf_path}' not found.")
