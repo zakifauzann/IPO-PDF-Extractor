@@ -22,605 +22,11 @@ except Exception as e:
     print(f"Error configuring Gemini API: {e}")
     sys.exit(1)
 
-
-
 def analyze_pdf_with_gemini(pdf_path):
     """Send pdf to Gemini AI and get structured JSON data, with improved error handling."""
-    prompt = """
-     You are an expert in financial analysis and IPO prospectuses. Your ABSOLUTE TOP PRIORITY is to extract specific information from the provided text and output the response in a STRICTLY VALID JSON format. If information is not found, leave the corresponding field empty or null. Do not calculate or assume any values unless explicitly stated. You will extract information ONLY from the "Financial Information," "Key Financial Data," "Corporate Information," or similar sections of the IPO prospectus.
 
-        EXTRACT THE FOLLOWING INFORMATION:
-        
-        Strictly only extract data focusing specifically on the latest Financial Year Ended (FYE) results. Exclude any Financial Period Ended (FPE) data. Be careful of unit used in the document, for example RM'000 or RM Million or just simply RM (round off to become RM'000).
-
-        1.  **Profit After Tax (PAT) ['000]**:
-            * TYou MUST take values of latest FYE.
-            * Ensure all figures are in RM'000 (Ringgit Malaysia thousands).
-
-        2.  **PAT (FYE) List ['000, comma-separated]**:
-            * Extract all available PAT values for Financial Year End (FYE).
-            * Ensure values are formatted as a comma-separated list.
-            * Figures must be in RM'000.
-
-        3.  **PAT (FPE) List ['000, comma-separated]**:
-            * Extract all available PAT values for Financial Period End (FPE).
-            * Ensure values are formatted as a comma-separated list.
-            * Figures must be in RM'000.
-
-        4.  **FPE Period**:
-            * Extract the financial period duration in month.
-            * Calculate the financial period duration in month state the period number only.
-            * Example: 9
-
-        5.  **PE (Price-to-Earnings Ratio, reported)**:
-            * Extract the officially reported PE ratio of the latest FYE year.
-            * Ensure it is represented as a numerical value.
-
-        6.  **PAT Margin [%]**:
-            * Extract the PAT margin percentage.
-            * Represent as a percentage (e.g. 25 as 25%).
-
-        7.  **Total Assets (Pro Forma) ['000]**:
-            * Extract total assets under pro forma adjustments.
-            * Figures must be in RM'000.
-
-        8.  **Total Liabilities (Pro Forma) ['000]**:
-            * Extract total liabilities under pro forma adjustments.
-            * Figures must be in RM'000.
-
-        9.  **Total Cash ['000]**:
-            * Extract the latest total cash available in current assets section.
-            * Figures must be in RM'000.
-
-        10. **Total Interest-Bearing Borrowings ['000]**:
-            * Extract total borrowings that bear interest.
-            * Figures must be in RM'000.
-
-        11. **Use of Proceeds**:
-            * Extract detailed breakdown of IPO proceeds.
-            * For category choose between these: Business Expansion, Debt Repayment, Working Capital, Listing Expenses and Others. 
-            * Each entry must accurately include without any round-off:
-                - **Category** (e.g., Expansion, Debt Repayment)
-                - **Purpose**
-                - **Amount (RM'000)**
-                - **Percentage (%)**
-                - **Time Frame in numbers (1-100)**
-
-        12. **Executive Directors**:
-            * Extract only directors with "Executive" in their title.
-            * Each entry must include:
-                - **Title**
-                - **Name**
-                - **Total Remuneration** (sum up salary, bonuses, others if applicable)
-                - **Age** (only if explicitly stated, or try to find in text if not available in table; do not estimate)
-
-        13. **Geographical Segments**:
-            * Extract total revenue per geographical segment.
-            * You MUST take values of latest Financial Year Ended(FYE) (search values under the latest FYE year).
-            * You MUST use the values of the TOTAL revenues.
-            * You MUST calculate the percentage based on the total revenue.
-            * Show percentage as floats, eq, 2.25% -> 2.25
-            * If the segment data is not found, return null.
-            * Figures must be in RM'000.
-
-        14. **Business Segments**:
-            * Extract total revenue per business segment.
-            * You MUST take values of latest Financial Year Ended(FYE) (search values under the latest FYE year).
-            * You MUST use the values of the TOTAL revenues.
-            * You MUST calculate the percentage based on the total revenue.
-            * Show percentage as floats, eq, 2.25% -> 2.25
-            * If the segment data is not found, return null.
-            * Figures must be in RM'000.
-
-        15. **Major Customers**:
-        * Extract major customers and their total revenue contribution.
-        * You MUST take values of latest Financial Year Ended(FYE) (search values under the latest FYE year).
-        * Each entry must include:
-            - **Name/Segment**
-            - **Total Revenue (RM'000)**
-            - **Percentage (%)**
-            - Show percentage as floats, eq, 2.25% -> 2.25
-        * If a table states "-" for revenue, consider it null.
-
-        16. **Corporate Structure**:
-            * Extract details on subsidiaries and associates.
-            * Each entry must include:
-                - **Name**
-                - **Principal Activities**
-                - **Ownership Percentage**
-            * Classify ownership as:
-                - **Subsidiaries** (own >= 50%)
-                - **Associates** (own < 50%)kkkkk
-                
-        17. **Sector:**
-            * Determine and specify the company's sector and sub sector.
-            * Find the these keywords in the document.
-            * Refer the table below, do not make any assumptions:
-            
-            Sector              Sub Sector          Definition
-            -----------------------------------------------------------------------------------------------------
-            1                   1.1                 Companies engaged in the construction of commercial and
-            CONSTRUCTION        CONSTRUCTION        residential buildings, infrastructure such as railways, highways,
-                                                    roads and providers of building construction-related services
-                                                    such as architects, interior design
-            
-            2                   2.1                 Companies that raise livestock and operate fisheries. Includes
-            CONSUMER            AGRICULTURAL        manufacturers of livestock feeds
-            PRODUCTS &          PRODUCTS
-            SERVICES
-                                2.2                 Companies that produce and distribute passenger automobiles
-                                AUTOMOTIVE
-            
-                                2.3                 Businesses not covered in the other prescribed sub sectors
-                                CONSUMER            under Consumer Products & Services
-                                SERVICES
-            
-                                2.4                 Food or beverages producers including packaged foods, dairy
-                                FOOD/BEVERAGES      products, brewers, soft drinks
-            
-                                2.5                 Manufacturers and distributors of household products including
-                                HOUSEHOLD GOODS     furniture, kitchenware, consumer electronics
-            
-                                2.6                 Manufacturers and distributers of personal products including
-                                PERSONAL GOODS      textiles, apparel, footwear, jewellery, timepieces, accessories,
-                                                    cosmetics, personal care, tobacco
-            
-                                2.7                 Owners and operators of retail stores including direct marketing
-                                RETAILERS
-            
-                                2.8                 Companies providing travel and tourism related services
-                                TRAVEL, LEISURE &   includes airlines, gambling, hotels, restaurants and recreational
-                                HOSPITALITY         services
-            
-            3                   3.1                 Suppliers of equipment and services to oil and gas producers
-            ENERGY              ENERGY              such as drilling, exploration, platform construction
-                                INFRASTRUCTURE,
-                                EQUIPMENT &
-                                SERVICES
-            
-                                3.2                 Companies engaged in the exploration and production of oil and
-                                OIL & GAS           gas
-                                PRODUCERS
-            
-                                3.3                 Companies that produce alternative energy including alternative
-                                OTHER ENERGY        fuels
-                                RESOURCES
-            
-                                3.4                 Companies that provide equipment and services involved in
-                                RENEWABLE ENERGY    producing renewable energy
-            
-            -----------------------------------------------------------------------------------------------------
-            
-            Sector              Sub Sector          Definition
-            -----------------------------------------------------------------------------------------------------
-            4                   4.1                 Banks providing a broad range of financial services, including
-            FINANCIAL           ΒΑΝΚING             retail banking, loans and money transmissions
-            SERVICES
-        
-                                4.2                 Insurance companies with products in life, health, property and
-                                INSURANCE           casualty insurance, takaful
-            
-                                4.3                 Companies engaged in financial activities not specified
-                                OTHER               elsewhere, include stock exchanges, securities, asset
-                                FINANCIALS          management companies and other service providers to financial
-                                                    institutions
-            
-            5                   5.1                 Manufacturers and distributors of health care equipment and
-            HEALTH CARE         HEALTH CARE         providers of health care services includes lab testing services,
-                                EQUIPMENT &         dialysis centers
-                                SERVICES
-            
-                                5.2                 Owners and operators of health care facilities including
-                                HEALTH CARE         hospitals, clinics, nursing homes, rehabilitation centres
-                                PROVIDERS
-            
-                                5.3                 Companies engaged in the research, development, production
-                                PHARMACEUTICALS     or distribution of pharmaceuticals
-            
-            6                   6.1                 Manufacturers and distributors of parts and accessories for
-            INDUSTRIAL          AUTO PARTS          automobiles and motorcycles such as tires, batteries, engines
-            PRODUCTS &
-            SERVICES
-            
-                                6.2                 Manufacturers and wholesalers of building materials including
-                                BUILDING            cement, concrete, tiles and paint
-                                MATERIALS
-            
-                                6.3                 Companies that primarily produce and distribute chemicals for
-                                CHEMICALS           industry use. Includes plastics and rubber in their raw form or
-                                                    molded plastic products, polymers, adhesives, dyes, coatings
-                                                    and other chemicals for specialised applications
-            
-                                6.4                 Diversified companies with business activities in three or more
-                                DIVERSIFIED         sectors of which none contributes substantial revenue
-                                INDUSTRIALS
-            
-                                6.5                 Manufacturers and distributors of heavy machinery and
-                                INDUSTRIAL          engineering equipment
-                                ENGINEERING
-            
-                                6.6                 Manufacturers and distributors of industrial machinery and
-                                INDUSTRIAL          components which includes machine tools, castings and
-                                MATERIALS,          moulding equipment, presses, compressors, elevators and
-                                COMPONENTS &        escalators
-                                EQUIPMENT
-            
-            -----------------------------------------------------------------------------------------------------
-            
-            Sector              Sub Sector              Definition
-            -----------------------------------------------------------------------------------------------------
-            7                   6.7                 Businesses not covered in the other prescribed sub sectors
-            PLANTATION          INDUSTRIAL          under Industrial Products & Services
-                                SERVICES
-            
-                                6.8                 Producers and traders of metals and metal products which
-                                METALS              includes iron, aluminium and steel
-            
-                                6.9                 Manufacturers & distributors of paper, containers, cardboard,
-                                PACKAGING           bags, boxes and cans used for packaging
-                                MATERIALS
-            
-                                6.10                Manufacturers and distributors of timber and related wood
-                                WOOD AND WOOD       products
-                                PRODUCTS
-            
-            8                   7.1                 Companies engaged in the cultivation, planting and/or replanting
-            PROPERTY            PLANTATION          of crops
-            
-                                8.1                 Companies that invest in real estate through development,
-                                PROPERTY            investment and ownership including real estate service providers
-                                                    such as real estate brokers, agencies, leasing companies,
-                                                    management companies and advisory services
-            
-            9                   9.1                 Real estate investment trusts that focus investment in a portfolio
-            REAL ESTATE         REAL ESTATE         of income-generating properties such as shopping malls, hotels,
-            INVESTMENT          INVESTMENT          offices and service apartments
-            TRUSTS              TRUSTS
-            
-            10                  10.1                Companies providing internet-related services such as Internet
-            TECHNOLOGY          DIGITAL             access providers, search engines and providers of website
-                                SERVICES            design, web hosting and e-mail services including companies
-                                                    that provide solutions and platforms for e-commerce or
-                                                    electronic payments
-            
-                                10.2                Companies engaged in the manufacturing and distribution of
-                                SEMICONDUCTORS      semiconductors and semiconductor equipment
-            
-                                10.3                Companies engaged in developing and producing software
-                                SOFTWARE            designed for specialised application such as systems software,
-                                                    enterprise and technical software, mobile application
-            
-                                10.4                Manufacturers and distributors of technology hardware and
-                                TECHNOLOGY          equipment such as computers, servers, mainframes,
-                                EQUIPMENT           workstations and related peripherals such as mass-storage
-                                                    drives, motherboards, monitors, keyboards, printers, smartcards
-            
-            -----------------------------------------------------------------------------------------------------
-            
-            Sector              Sub Sector          Definition
-            -----------------------------------------------------------------------------------------------------
-            11                  11.1                Companies providing advertising, public relations and marketing
-            TELECOMMUNICATIONS  MEDIA               services includes producers, operators and broadcasters of
-            & MEDIA                                 radio, television, music and filmed entertainment, publishers of
-                                                    information via printed or electronic media
-            
-                                11.2                Producers and distributors of telecommunication equipment
-                                TELECOMMUNICATIONS  such as satelites, LANs, WANs, routers, mobile telephones,
-                                EQUIPMENT           fibers optics, teleconferencing equipment
-            
-                                11.3                Providers of mobile and fixed-line telecommunication networks
-                                TELECOMMUNICATIONS  and providers of satelite and wireless data communication
-                                SERVICE             solutions and related services
-                                PROVIDERS
-            
-            12                  12.1                Companies providing transportation services including
-            TRANSPORTATION      TRANSPORTATION      companies that manage airports, train depots, ports and
-            & LOGISTICS         & LOGISTICS         providers of courier and logistic services
-                                SERVICES
-            
-                                12.2                Manufacturers and distributors of transportation equipment
-                                TRANSPORTATION      includes shipbuilding
-                                EQUIPMENT
-            
-            13                  13.1                Companies that produce or distribute electricity
-            UTILITIES           ELECTRICITY
-            
-                                13.2                Companies providing water or distribute gas to end-users or
-                                GAS, WATER &        utility companies with significant presence in more than one
-                                MULTI-UTILITIES     utility
-            
-                                13.3                Companies that produce or distribute electricity through a
-                                RENEWABLE ENERGY    renewable energy source
-                                ELECTRICITY
-            
-            14                  14.1                Close-ended investment entities
-            CLOSED END FUND     CLOSED END FUND
-            
-            15                  15.1                Special purpose acquisition companies
-            SPECIAL             SPECIAL
-            PURPOSE             PURPOSE
-            ACQUISITION         ACQUISITION
-            COMPANY             COMPANY
-            
-            16                  16.1                Conventional fixed income securities that are listed and traded
-            BOND                CONVENTIONAL-MGS    on the stock market
-            CONVENTIONAL
-            
-                                16.2                Conventional fixed income securities that are listed and traded
-                                CONVENTIONAL-GG     on the stock market
-            
-                                16.3                Conventional fixed income securities that are listed and traded
-                                CONVENTIONAL-PDS    on the stock market
-            
-            -----------------------------------------------------------------------------------------------------
-            
-            Sector              Sub Sector          Definition
-            -----------------------------------------------------------------------------------------------------
-            17                  17.1                Shariah Compliant fixed income securities that are listed and
-            BOND ISLAMIC        ISLAMIC-GII         traded on the stock market
-            
-                                17.2                Shariah Compliant fixed income securities that are listed and
-                                ISLAMIC-GG          traded on the stock market
-            
-                                17.3                Shariah Compliant fixed income securities that are listed and
-                                ISLAMIC-PDS         traded on the stock market
-            
-            18                  18.1                Open-ended investment entities
-            EXCHANGE            COMMODITY FUND
-            TRADED FUND-
-            COMMODITY
-            
-            19                  19.1                Open-ended investment entities
-            EXCHANGE            EQUITY FUND
-            TRADED FUND-
-            EQUITY
-            
-            20                  20.1                Open-ended investment entities
-            EXCHANGE            BOND FUND
-            TRADED FUND-
-            BOND
-            
-            21                  21.1                Business enterprises that are set up as trust, instead of
-            BUSINESS            BUSINESS TRUST      companies. They are hybrid structures with elements of both
-            TRUST                                   companies and trusts and created by a trust deed
-
-        OUTPUT REQUIREMENTS (MUST BE FOLLOWED EXACTLY):
-
-        *   THE OUTPUT MUST BE A VALID JSON OBJECT. THIS IS YOUR TOP PRIORITY.
-        *   Use clear and descriptive keys for each extracted field.
-        *   IF A SPECIFIC PIECE OF INFORMATION IS NOT FOUND IN THE TEXT, SET THE CORRESPONDING VALUE TO `null`. DO NOT MAKE UP INFORMATION.
-        *   Ensure that numerical values are represented as NUMBERS (e.g., 1234567.89), NOT STRINGS ("1234567.89").
-        *   Percentages should be represented as decimals (e.g., 0.25 for 25%).
-        *   Arrays should be used to represent lists of items (e.g., a list of Executive Directors).
-        *   Include ALL the fields from the example, even if the value is `null`.
-
-    Section B: Extract the following fields  
-           
-            "Name": "Company name",
-            "Website": "Company website address",
-            "Summary": "Brief summary of the company",
-            "Code": null,
-            "Symbol": null,
-            "Market Type": "ACE/LEAP/Main",
-            "Adviser": "Adviser's name",
-            "Issuing House": "Issuing house name",
-            "Last Exposure Date (Draft Prospectus)": "DD MMMM YYYY",
-            "Pre Shariah (Publish)": null,
-            "Pre Shariah (BIS)": null,
-            "Pre Shariah (SC)": "COMPLIANT/NOT-COMPLIANT",
-            "Pre Shariah Ratio": null,
-            "Closing Date": "DD MMMM YYYY",
-            "Balloting Date": "DD MMMM YYYY",
-            "Listing Date": "DD MMMM YYYY",
-            "Listing Price": float,
-            "Num of Shares (Enlarged) [M]": float,
-            "New Shares Issued [M]": float,
-            "Existing Shares Offered For Sale [M]": float,
-            "IPO Shares Breakdown of the Enlarged Share": {
-                "Eligible Directors & Employees [M]": float,
-                "Malaysian Public [M]": float,
-                "MITI [M]": float,
-                "Others (Private placements, etc.) [M]": float
-            },
-            "Utilisation of Proceeds - Debt Funding [%]": float,
-            "Utilisation of Proceeds - Debt Funding ['000]": int,
-
-    ---
-    For Pro Forma related items, extract data from *PRO FORMA CONSOLIDATED STATEMENTS OF FINANCIAL POSITION* table, understand the table and extract data
-            "Profit After Tax (PAT) ['000]": int (Take Latest Financial Year Ended (FYE)),
-            "PAT (FYE) List ['000, comma-separated]": "Comma-separated values",
-            "PAT (FPE) List ['000, comma-separated]": "Comma-separated values (if available)",
-            "FPE Period": ,
-            "PE (reported)": float,
-            "PAT Margin [%]": float (Take Latest Financial Year Ended (FYE)),
-            "Total Assets (Pro Forma) ['000]": int(total_assets_pro_forma , Take Pro Forma II values),
-            "Total Liabilities (Pro Forma) ['000]": int(total_liabilities_pro_forma, Take Pro Forma II values),
-            "Total Cash ['000]": int(total_cash_and_bank_balances, Take Pro Forma II values),
-            "Total Interest-Bearing Borrowings ['000]": int(total_interest_bearing_borrowings),
-    ---
-            "Bursa Peers (from IMR section)": "Comma-separated list",
-            "International Peers (from IMR section)": "Comma-separated list",
-            "MITI Application Open Date": "DD MMMM YYYY",
-            "MITI Application Close Date": "DD MMMM YYYY",
-            "MITI Payment & 2nd Document Submission Date": "DD MMMM YYYY",
-            "Oversubscription": "Oversubscription value",
-            "Price 1st Day (Open, Close)": "Opening and closing prices"
-    ---
-
-Output Requirements (Must Be Followed Exactly)  
-
-- VALID JSON FORMAT: This is your top priority. Ensure the output is a **STRICTLY valid JSON** object.  
-- Numerical Values: Represent as numbers, not strings (e.g., 1234567.89). Percentages should be numbers (e.g., 25.0 for 25%).  
-- Arrays: Use arrays for lists (e.g., Executive Directors).  
-- Missing Information: If a field is not found, set it to `null`. Do not fabricate information.  
-- Consistency: Maintain all keys/fields from the sample JSON structure, even if values are `null`.     
-
-Sample output:
-
-{
-        "use_of_proceeds": [
-            {
-            "Category": "Business Expansion",
-            "Purpose": "Purchase of machineriess",
-            "Amount (RM'000)": 1542,
-            "Percentage (%)": 17.1,
-            "Time Frame in numbers": 12
-        },      
-        ],
-
-        "executive_directors": [
-            {
-            "title": "Chief Executive Officer",
-            "name": "Alice Johnson",
-            "age": 55,
-            "remuneration": {
-                "salary": 1200000,
-                "directorFees": 30000,
-                "meetingAllowance": 2500,
-                "otherEmoluments": 230623
-                },
-            "total remuneration" : 1463123
-            "remuneration_currency_unit":"RM"
-            },
-    
-        ],
-        "geographical_segments": [
-            {
-            "segment": "Malaysia",
-            "total_revenue": 500000000.00,
-            "percentage": 0.60
-            },
-            {
-            "segment": "Thailand",
-            "total_revenue": 250000000.00,
-            "percentage": 0.30
-            },
-            {
-            "segment": "China",
-            "total_revenue": 83333333.33,
-            "percentage": 0.10
-            }
-        ],
-        "business_segments": [
-            {
-            "segment": "Software",
-            "total_revenue" : 4500000.00,
-            "currency_unit" : "RM'000",
-            "percentage": 0.48
-            },
-            {
-            "segment": "Manufacturing",
-            "total_revenue": 350000000.00,
-            "currency_unit" : "RM'000",
-            "percentage": 0.42
-            }
-        ],
-        "major_customers": [
-            {
-            "customer name": "Customer 2",
-            "segment" : "construction"
-            "total_revenue": 0,
-            "currency_unit" : "RM'000"
-            "percentage": 0,
-            },
-            {
-            "customer name": "Customer C",
-            "segment" : "construction"
-            "total_revenue": 75000000.00,
-            "currency_unit" : "RM'000"
-            "percentage": 0.09,
-            }
-        ],
-        "corporate_structure": {
-            "subsidiaries": [
-            {
-                "name": "Alpha Ltd",
-                "principal_activities": "Software Development",
-                "ownership_percentage": 0.80
-            },
-            {
-                "name": "Gamma Corp",
-                "principal_activities": "Hardware Manufacturing",
-                "ownership_percentage": 1.00
-            }
-            ],
-            "associates": [
-            {
-                "name": "Delta Inc",
-                "principal_activities": "Research and Development",
-                "ownership_percentage": 0.30
-            }
-            ],
-            "unknown_ownership": [
-            {
-                "name": "Epsilon Group",
-                "principal_activities": "Marketing and Sales"
-            }
-            ]
-        },
-            {
-            "Sector" : [
-                {
-                "sector" : "UTILITIES"
-                "sub-sector" : "ELECTRICITY"
-                }
-                ]
-            }
-        {
-            "Name": "Company name",
-            "Website": "Company website address",
-            "Summary": "Brief summary of the company",
-            "Code": null,
-            "Symbol": null,
-            "Market Type": "ACE/LEAP/Main",
-            "Adviser": "Adviser's name",
-            "Issuing House": "Issuing house name",
-            "Last Exposure Date (Draft Prospectus)": "DD MMMM YYYY",
-            "Pre Shariah (Publish)": null,
-            "Pre Shariah (BIS)": null,
-            "Pre Shariah (SC)": "COMPLIANT/NOT-COMPLIANT",
-            "Pre Shariah Ratio": null,
-            "Closing Date": "DD MMMM YYYY",
-            "Balloting Date": "DD MMMM YYYY",
-            "Listing Date": "DD MMMM YYYY",
-            "Listing Price": float,
-            "Num of Shares (Enlarged) [M]": float,
-            "New Shares Issued [M]": float,
-            "Existing Shares Offered For Sale [M]": float,
-            "IPO Shares Breakdown of the Enlarged Share": {
-                "Eligible Directors & Employees [M]": float,
-                "Malaysian Public [M]": float,
-                "MITI [M]": float,
-                "Others (Private placements, etc.) [M]": float
-            },
-            "Utilisation of Proceeds - Debt Funding [%]": float,
-            "Utilisation of Proceeds - Debt Funding ['000]": float,
-            "Profit After Tax (PAT) ['000]": int,
-            "PAT (FYE) List ['000, comma-separated]": "Comma-separated values",
-            "PAT (FPE) List ['000, comma-separated]": "Comma-separated values (if available)",
-            "FPE Period": "Period ending MM-DD",
-            "PE (reported)": float,
-            "PAT Margin [%]": float,
-            "Total Assets (Pro Forma) ['000]": int,
-            "Total Liabilities (Pro Forma) ['000]": int,
-            "Total Cash ['000]": int,
-            "Total Interest-Bearing Borrowings ['000]": int,
-            "Notes (Public)": "Additional notes if available",
-            "Broker TP List": "Comma-separated broker target prices",
-            "Broker TP (Median)": float,
-            "Notes on Brokers TP, etc. (Private)": "Additional broker notes",
-            "Business Prospect Score Adjuster": int,
-            "Bursa Peers (from IMR section)": "Comma-separated list",
-            "International Peers (from IMR section)": "Comma-separated list",
-            "MITI Application Open Date": "DD MMMM YYYY",
-            "MITI Application Close Date": "DD MMMM YYYY",
-            "MITI Payment & 2nd Document Submission Date": "DD MMMM YYYY",
-            "Oversubscription": "Oversubscription value",
-            "Price 1st Day (Open, Close)": "Opening and closing prices"
-        }
-  
-    }
-    """
+    with open("prompt.txt", "r", encoding='utf-8') as p:
+        prompt = p.read()
 
     # Upload the PDF using the File API
     pdf_file = client.files.upload(
@@ -632,24 +38,52 @@ Sample output:
         response = client.models.generate_content(
             model="gemini-2.0-flash",
             config=types.GenerateContentConfig(
-                temperature=0.4 # Low temperature for consistent outputs, low randomness
+                temperature=0.3 # Low temperature for consistent outputs, low randomness
             ),
             contents=[pdf_file , prompt]  
         )
 
+        # Open and read a text file
+        with open("isaham_sectors.txt", 'r', encoding='utf-8') as f:
+            sector_table = f.read()
+
+        # Generate content using Gemini AI
+        responseSector = client.models.generate_content(
+            model="gemini-2.0-flash",
+            config=types.GenerateContentConfig(
+                temperature=0.7 # Low temperature for consistent outputs, low randomness
+            ),
+            contents=[pdf_file , 
+            f"""What are the possible stock sectors for the given company's IPO Prospectus? List 5 possible sectors 
+            and reasons for assigning that particular sector (give a suffcient context and proof from the IPO document, around 100 words). 
+            In JSON format. Refer to below table for list of sectors\n\n  {sector_table}""" ]  
+        )
+
         print(response.usage_metadata)
+        print(responseSector.usage_metadata)
+        # print("SECTORS:")
+        # print(responseSector.text)
         # Extract JSON using regex to handle extra text
         match = re.search(r"\{.*}", response.text, re.DOTALL)
+        matchSector =  re.search(r"\{.*}", responseSector.text, re.DOTALL)
+
         if match:
             json_text = match.group(0)
         else:
             print("ERROR: Could not extract JSON from Gemini response.")
             json_text = "{}"
 
+        if matchSector:
+            json_Sector = matchSector.group(0)
+        else:
+            print("ERROR: Could not extract Sector JSON from Gemini response.")
+            json_Sector = "{}"
+
         # Parse JSON
         try:
             json_data = json.loads(json_text)
-            return json_data
+            json_Sector = json.loads(json_Sector)
+            return (json_data, json_Sector)
 
         except json.JSONDecodeError as e:
             print(f"ERROR: JSON decoding error: {e}")
@@ -660,10 +94,14 @@ Sample output:
         return {}
 
 
-def save_json(structured_data, pdf_path, calc_flag = False):
+def save_json(structured_data, pdf_path, sector_flag = False):
     # Change output file name to match the PDF file name
     pdf_file_name = os.path.splitext(os.path.basename(pdf_path))[0]  # Get PDF file name without extension
-    output_file = os.path.join("json" , f"{pdf_file_name}.json")
+    
+    if not sector_flag:
+        output_file = os.path.join("json", f"{pdf_file_name}.json")
+    else:
+        output_file = os.path.join("json", f"{pdf_file_name}_sectors.json")
 
     try:
         with open(output_file, "w", encoding="utf-8") as f:
@@ -675,7 +113,7 @@ def save_json(structured_data, pdf_path, calc_flag = False):
 
 if __name__ == "__main__":
     # Specify the PDF path here:
-    pdf_path = os.path.join("pdf", "dengkil.pdf")  # Replace with the actual path to your PDF file
+    pdf_path = os.path.join("pdf", "3ren.pdf")  # Replace with the actual path to your PDF file
 
     if not os.path.exists(pdf_path):
         print(f"Error: PDF file '{pdf_path}' not found.")
@@ -684,6 +122,7 @@ if __name__ == "__main__":
     print(f"Processing PDF: {pdf_path}")
 
     # save data from AI
-    structured_data = analyze_pdf_with_gemini(pdf_path)
-    save_json(structured_data , pdf_path)
+    (json_text, json_Sector) = analyze_pdf_with_gemini(pdf_path)
+    save_json(json_text , pdf_path)
+    save_json(json_Sector, pdf_path, sector_flag=True)
 
