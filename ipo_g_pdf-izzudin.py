@@ -87,11 +87,11 @@ def analyze_pdf_with_gemini(pdf_path):
 
         except json.JSONDecodeError as e:
             print(f"ERROR: JSON decoding error: {e}")
-            return {}
+            return ({},{})
 
     except Exception as e:
         print(f"ERROR: Gemini processing failed: {e}")
-        return {}
+        return ({},{})
 
 
 def save_json(structured_data, pdf_path, sector_flag = False):
