@@ -32,110 +32,52 @@ def analyze_text_with_gemini(pdf_path):
         
         Strictly only extract data focusing specifically on the latest Financial Year Ended (FYE) results. Exclude any Financial Period Ended (FPE) data. Be careful of unit used in the document, for example RM'000 or RM Million or just simply RM (round off to become RM'000).
 
-        1.  **Profit After Tax (PAT) ['000]**:
-            * TYou MUST take values of latest FYE.
-            * Ensure all figures are in RM'000 (Ringgit Malaysia thousands).
-
-        2.  **PAT (FYE) List ['000, comma-separated]**:
-            * Extract all available PAT values for Financial Year End (FYE).
-            * Ensure values are formatted as a comma-separated list.
-            * Figures must be in RM'000.
-
-        3.  **PAT (FPE) List ['000, comma-separated]**:
-            * Extract all available PAT values for Financial Period End (FPE).
-            * Ensure values are formatted as a comma-separated list.
-            * Figures must be in RM'000.
-
-        4.  **FPE Period**:
-            * Extract the financial period duration in month.
-            * Calculate the financial period duration in month state the period number only.
-            * Example: 9
-
-        5.  **PE (Price-to-Earnings Ratio, reported)**:
-            * Extract the officially reported PE ratio of the latest FYE year.
-            * Ensure it is represented as a numerical value.
-
-        6.  **PAT Margin [%]**:
-            * Extract the PAT margin percentage.
-            * Represent as a percentage (e.g. 25 as 25%).
-
-        7.  **Total Assets (Pro Forma) ['000]**:
-            * Extract total assets under pro forma adjustments.
-            * Figures must be in RM'000.
-
-        8.  **Total Liabilities (Pro Forma) ['000]**:
-            * Extract total liabilities under pro forma adjustments.
-            * Figures must be in RM'000.
-
-        9.  **Total Cash ['000]**:
-            * Extract the latest total cash available 
-            * Try to find these values in current assets section (e.g. Cash and Bank Balance).
-            * Figures must be in RM'000.
-
-        10. **Total Interest-Bearing Borrowings ['000]**:
-            * Extract total borrowings that bear interest.
-            * Figures must be in RM'000.
-
-        11. **Use of Proceeds**:
-            * Extract detailed breakdown of IPO proceeds.
-            * For category choose between these: Business Expansion, Debt Repayment, Working Capital, Listing Expenses and Others. 
-            * Each entry must accurately include without any round-off:
-                - **Category** (e.g., Expansion, Debt Repayment)
-                - **Purpose**
-                - **Amount (RM'000)**
-                - **Percentage (%)**
-                - **Time Frame in numbers (1-100)**
-
-        12. **Executive Directors**:
-            * Extract only directors with "Executive" in their title.
-            * Each entry must include:
-                - **Title**
-                - **Name**
-                - **Total Remuneration** (sum up salary, bonuses, others if applicable)
-                - **Age** (only if explicitly stated, or try to find in text if not available in table; do not estimate)
-
-        13. **Geographical Segments**:
+        1.  **Geographical Segments**:
             * Extract total revenue per geographical segment.
-            * You MUST take values of latest FYE (search values under the latest FYE year).
+            * You MUST take values of latest FYE or Financial Year Ended (extract values under the latest FYE year). Do not mistake for latest year of FPE.
             * You MUST use the values of the TOTAL revenues.
             * You MUST calculate the percentage based on the total revenue.
+            * Ensure the percentage is presented in a standard format (e.g., 98.83% instead of 0.9883).
             * If the segment data is not found, return null.
             * Figures must be in RM'000.
 
-        14. **Business Segments**:
+        2.  **Business Segments**:
             * Extract total revenue per business segment.
-            * You MUST take values of latest FYE (search values under the latest FYE year).
+            * You MUST take values of latest FYE or Financial Year Ended (extract values under the latest FYE year). Do not mistake for latest year of FPE.
             * You MUST use the values of the TOTAL revenues.
             * You MUST calculate the percentage based on the total revenue.
+            * Ensure the percentage is presented in a standard format (e.g., 98.83% instead of 0.9883).
             * If the segment data is not found, return null.
             * Figures must be in RM'000.
 
-        15. **Major Customers**:
-        * Extract major customers and their total revenue contribution.
-        * Take values of latest FYE.
-        * Each entry must include:
-            - **Name/Segment**
-            - **Total Revenue (RM'000)**
-            - **Percentage (%)**
-        * If a table states "-" for revenue, consider it null.
+        3.  **Major Customers**:
+            * Extract major customers and their total revenue contribution.
+            * Take values of latest FYE.
+            * Each entry must include:
+                - **Name/Segment**
+                - **Total Revenue (RM'000)**
+                - **Percentage (%)**.
+            * If a table states "-" for revenue, consider it null.
 
-        16. **Corporate Structure**:
+        4.  **Corporate Structure**:
             * Extract details on subsidiaries and associates.
             * Each entry must include:
                 - **Name**
                 - **Principal Activities**
-                - **Ownership Percentage**
+                - **Ownership Percentage**.
             * Classify ownership as:
                 - **Subsidiaries** (own >= 50%)
-                - **Associates** (own < 50%)kkkkk
+                - **Associates** (own < 50%)
                 
-        17. **Sector:**
-            * Determine and specify the company's sector and sub sector.
-            * Find the these keywords in the document.
-            * Refer the table below, do not make any assumptions:
+        5.  **Sector:**
+            * Identify the company's sector and sub-sector based on Bursa Malaysia's classification (below). 
+            * Locate the most relevant keywords in the document rr the most mentioned in the document to support your classification. 
+            * Provide a brief explanation for your choice.
+            * If no sub-sector is found, state it explicitly—do not assume.
+            * Use the reference table below and avoid making assumptions.
             
             Sector              Sub Sector          Definition
-            -----------------------------------------------------------------------------------------------------
+            ------------------------------------------------------------------------------------------------------------
             1                   1.1                 Companies engaged in the construction of commercial and
             CONSTRUCTION        CONSTRUCTION        residential buildings, infrastructure such as railways, highways,
                                                     roads and providers of building construction-related services
@@ -186,10 +128,10 @@ def analyze_text_with_gemini(pdf_path):
                                 3.4                 Companies that provide equipment and services involved in
                                 RENEWABLE ENERGY    producing renewable energy
             
-            -----------------------------------------------------------------------------------------------------
+            ------------------------------------------------------------------------------------------------------------
             
             Sector              Sub Sector          Definition
-            -----------------------------------------------------------------------------------------------------
+            ------------------------------------------------------------------------------------------------------------
             4                   4.1                 Banks providing a broad range of financial services, including
             FINANCIAL           ΒΑΝΚING             retail banking, loans and money transmissions
             SERVICES
@@ -242,10 +184,10 @@ def analyze_text_with_gemini(pdf_path):
                                 COMPONENTS &        escalators
                                 EQUIPMENT
             
-            -----------------------------------------------------------------------------------------------------
+            ------------------------------------------------------------------------------------------------------------
             
             Sector              Sub Sector              Definition
-            -----------------------------------------------------------------------------------------------------
+            ------------------------------------------------------------------------------------------------------------
             7                   6.7                 Businesses not covered in the other prescribed sub sectors
             PLANTATION          INDUSTRIAL          under Industrial Products & Services
                                 SERVICES
@@ -349,10 +291,10 @@ def analyze_text_with_gemini(pdf_path):
                                 16.3                Conventional fixed income securities that are listed and traded
                                 CONVENTIONAL-PDS    on the stock market
             
-            -----------------------------------------------------------------------------------------------------
+            ------------------------------------------------------------------------------------------------------------
 
             Sector              Sub Sector          Definition
-            -----------------------------------------------------------------------------------------------------
+            ------------------------------------------------------------------------------------------------------------
             17                  17.1                Shariah Compliant fixed income securities that are listed and
             BOND ISLAMIC        ISLAMIC-GII         traded on the stock market
             
@@ -381,13 +323,57 @@ def analyze_text_with_gemini(pdf_path):
             BUSINESS            BUSINESS TRUST      companies. They are hybrid structures with elements of both
             TRUST                                   companies and trusts and created by a trust deed
 
+        6.  **Additional Sector**
+
+            * The sectors below are not part of Bursa Malaysia’s classification.
+            * Locate the most relevant keywords in the document rr the most mentioned in the document to support your classification. 
+            * Identify and classify them as additional sectors.
+            * Provide a brief explanation for each classification, including the reason for your choice.
+            
+            "Automotive", "Blue Chip", "Construction", "Consumer Products", "Food & Beverages", "Financial Services", "Healthcare",
+            "Industrials Products", "Infrastructure (IPC)", "Media", "Oil & Gas", "Plantation", "Plastics", "Power Utilities",
+            "REITs", "Retailers", "Rubber Gloves", "Shipping Ports", "Exports", "Steel", "Technology", "Telco",
+            "Trading & Services", "Water Utilities", "Wooden Products", "Sarawak", "Internet of Things (IoT)", "Gold",
+            "Poultry & Eggs", "Property", "Hotels", "Sugar & Flour", "GLCs", "Upstream Oil & Gas", "Midstream Oil & Gas",
+            "Downstream Oil & Gas", "Big Brands F&B", "Courier Service", "Tan Sri Syed Mokhtar Al-Bukhary", "Mid Cap", "Small Cap",
+            "Highway", "Micro Cap", "F4GBM", "Green Tech", "Stationery", "All Stocks", "Logistics",
+            "Petrol Refiners and Distributors", "ETF", "Asset Management Service", "Copper Product", "Brewery",
+            "Computer Peripheral", "Condom", "Building Materials", "Crane", "Drinking Water", "Engineering Service",
+            "Fire Service", "Gaming", "Gas", "Office Products", "Jewellery", "Travel, Leisure & Hospitality", "M&E",
+            "Marine Operation & Chartering", "Polymer", "Agricultural Products", "Aluminium", "Apparels", "Speaker Systems",
+            "Auto Parts", "Automotive Battery", "Aviation", "Cements", "Education", "Electronic", "Furniture",
+            "Medical Service & Equipment", "Chemicals", "Banking", "IT Solutions/ IT Product", "Metals", "Petrochemicals",
+            "Palm Oil Machineries", "Packaging", "Papers", "Pharmaceuticals", "Plastic Product (Consumer)",
+            "Plastic Product (Precision Manufacturing)", "Ports", "Manufacturing", "Publication & Printing", "Rubber Plantations",
+            "Rubber Products", "Semiconductors", "Stone & Quarry", "Tins", "Transportations", "Penny Stocks", "Aerospace",
+            "Coffee", "Malaysian Steel", "Small & Mid Cap*", "FBMKLCI", "MSCI", "F4GBM Shariah",
+            "Newly Classified Shariah Non-Compliant Securities", "Newly Classified Shariah-Compliant Securities",
+            "Payment Products", "PN17", "Automation", "LED", "E&E", "Integrated Facilities Management", "IPO", "Personal Goods",
+            "Health Care Equipment & Services", "Coronavirus", "Industrial Materials, Components & Equipment",
+            "Industrial Products & Services", "Electronic Manufacturing Services (EMS)", "Industrial Engineering", "Energy",
+            "Energy Infrastructure, Equipment & Services", "Consumer Products & Services", "Packaging Materials",
+            "Digital Services", "Software", "Transportation & Logistics", "Transportation Equipment",
+            "Transportation & Logistics Services", "5G", "Stock Brokers", "Consumer Services", "Household Goods",
+            "Diversified Industrials", "Industrial Services", "Cloud Managed Services", "Wood & Wood Products",
+            "Technology Equipment", "Insurance", "Other Financials", "Oil & Gas Producers", "Other Energy Resources",
+            "Health Care Providers", "Telecommunications & Media", "Telecommunications Equipment",
+            "Telecommunications Service Providers", "Utilities", "Electricity", "Gas, Water & Multi-Utilities", "Dry Bulk Carrier",
+            "Integrated Immigration System", "Solar", "Timbers", "Cocoa", "OSAT", "Donald Trump", "Joe Biden", "Budget 2021",
+            "Work-from-Home (WFH)", "Conglomerates", "Vaccine", "Solar EPCC", "LRT3", "ATE", "Factory Automation",
+            "Container Ship Owner", "Freight Forwarding", "Warehousing", "Prime Movers & Trailers", "Electric Vehicles",
+            "EV Charger", "Precision Machining", "Cryptocurrency", "Sector X", "LSS4', "Flat Steel", "Long Steel",
+            "Politic Related", "FINTEC", "Digital Bank Contenders", "Automotive & Automobiles", "Digital Banks",
+            "Datuk Eddie Ong Choo Meng", "Chiau Beng Teik related", "Paper Packaging", "Artificial Intelligence",
+            "Solar Power Producer CGPP", "Disruptive Innovation", "Data Center Contractors", "Data Center MEPs",
+            "Renewable Energy", "Renewable Energy Electricity"
+            
         OUTPUT REQUIREMENTS (MUST BE FOLLOWED EXACTLY):
 
         *   THE OUTPUT MUST BE A VALID JSON OBJECT. THIS IS YOUR TOP PRIORITY.
         *   Use clear and descriptive keys for each extracted field.
         *   IF A SPECIFIC PIECE OF INFORMATION IS NOT FOUND IN THE TEXT, SET THE CORRESPONDING VALUE TO `null`. DO NOT MAKE UP INFORMATION.
         *   Ensure that numerical values are represented as NUMBERS (e.g., 1234567.89), NOT STRINGS ("1234567.89").
-        *   Percentages should be represented as decimals (e.g., 0.25 for 25%).
+        *   Percentages should be represented as percentages (e.g., 25% for 25%).
         *   Arrays should be used to represent lists of items (e.g., a list of Executive Directors).
         *   Include ALL the fields from the example, even if the value is `null`.
     """
@@ -433,7 +419,7 @@ def analyze_text_with_gemini(pdf_path):
 
 if __name__ == "__main__":
     # Specify the PDF path here:
-    pdf_path = os.path.join('dengkil_abridged.pdf')  # Replace with the actual path to your PDF file
+    pdf_path = os.path.join('pdf/chb.pdf')  # Replace with the actual path to your PDF file
 
     if not os.path.exists(pdf_path):
         print(f"Error: PDF file '{pdf_path}' not found.")
@@ -445,7 +431,7 @@ if __name__ == "__main__":
 
     # Change output file name to match the PDF file name
     pdf_file_name = os.path.splitext(os.path.basename(pdf_path))[0]  # Get PDF file name without extension
-    output_file = f"{pdf_file_name}_extracted.json"
+    output_file = f"json/{pdf_file_name}_extracted.json"
 
     try:
         with open(output_file, "w", encoding="utf-8") as f:
