@@ -67,6 +67,7 @@ You are an expert in financial analysis and IPO prospectuses. Your ABSOLUTE TOP 
 
         13. **Geographical Segments**:
             * Extract total revenue per geographical segment.
+            * Take all geographical segments for the latest Financial Year Ended(FYE).
             * You MUST take values of latest Financial Year Ended(FYE) (search values under the latest FYE year).
             * You MUST use the values of the TOTAL revenues.
             * You MUST calculate the percentage based on the total revenue.
@@ -84,7 +85,7 @@ You are an expert in financial analysis and IPO prospectuses. Your ABSOLUTE TOP 
             * Figures must be in RM'000.
 
         15. **Major Customers**:
-        * Extract major customers and their total revenue contribution.
+        * Extract all major customers and their total revenue contribution for the latest FYE. Include anonymous customers (Customer A etc.)
         * You MUST take values of latest Financial Year Ended(FYE) (search values under the latest FYE year).
         * Each entry must include:
             - **Name/Segment**
@@ -355,46 +356,36 @@ You are an expert in financial analysis and IPO prospectuses. Your ABSOLUTE TOP 
             BUSINESS            BUSINESS TRUST      companies. They are hybrid structures with elements of both
             TRUST                                   companies and trusts and created by a trust deed
 
-        OUTPUT REQUIREMENTS (MUST BE FOLLOWED EXACTLY):
-
-        *   THE OUTPUT MUST BE A VALID JSON OBJECT. THIS IS YOUR TOP PRIORITY.
-        *   Use clear and descriptive keys for each extracted field.
-        *   IF A SPECIFIC PIECE OF INFORMATION IS NOT FOUND IN THE TEXT, SET THE CORRESPONDING VALUE TO `null`. DO NOT MAKE UP INFORMATION.
-        *   Ensure that numerical values are represented as NUMBERS (e.g., 1234567.89), NOT STRINGS ("1234567.89").
-        *   Percentages should be represented as decimals (e.g., 0.25 for 25%).
-        *   Arrays should be used to represent lists of items (e.g., a list of Executive Directors).
-        *   Include ALL the fields from the example, even if the value is `null`.
 
     Section B: Extract the following fields  
            
-            "Name": "Company name",
-            "Website": "Company website address",
-            "Summary": "Brief summary of the company",
-            "Code": null,
-            "Symbol": null,
-            "Market Type": "ACE/LEAP/Main",
-            "Adviser": "Adviser's name",
-            "Issuing House": "Issuing house name",
-            "Last Exposure Date (Draft Prospectus)": "DD MMMM YYYY",
-            "Pre Shariah (Publish)": null,
-            "Pre Shariah (BIS)": null,
-            "Pre Shariah (SC)": "COMPLIANT/NOT-COMPLIANT",
-            "Pre Shariah Ratio": null,
-            "Closing Date": "DD MMMM YYYY",
-            "Balloting Date": "DD MMMM YYYY",
-            "Listing Date": "DD MMMM YYYY",
-            "Listing Price": float,
-            "Num of Shares (Enlarged) [M]": float,
-            "New Shares Issued [M]": float,
-            "Existing Shares Offered For Sale [M]": float,
-            "IPO Shares Breakdown of the Enlarged Share": {
-                "Eligible Directors & Employees [M]": float,
-                "Malaysian Public [M]": float,
-                "MITI [M]": float,
-                "Others (Private placements, etc.) [M]": float
-            },
-            "Utilisation of Proceeds - Debt Funding [%]": float,
-            "Utilisation of Proceeds - Debt Funding ['000]": int,
+        - Name : "Company name",
+        - Website: "Company website address",
+        - Summary: " Around 100 words brief summary of the company and its subsidiaries, what businesses are they doing? Where they are incorporated? ",
+        - Code: "company stock code/null",
+        - Symbol: "company stock symbol/null",
+        - Market Type: "ACE/LEAP/Main , where the company is going to be listed",
+        - Adviser: "Adviser's name",
+        - Issuing House: "Issuing house name",
+        - Last Exposure Date (Draft Prospectus): "DD MMMM YYYY",
+        - Pre Shariah (Publish) : "COMPLIANT/NOT-COMPLIANT",
+        - Pre Shariah (BIS) : "COMPLIANT/NOT-COMPLIANT",
+        - Pre Shariah (SC) : "COMPLIANT/NOT-COMPLIANT",
+        - Pre Shariah Ratio : "Whats the pre-shariah ratio, if stated",
+        - Closing Date : "DD MMMM YYYY",
+        - Balloting Date : "DD MMMM YYYY",
+        - Listing Date : "DD MMMM YYYY",
+        - Listing Price"  float,
+        - Num of Shares (Enlarged) [M]: "num of enlarged shares in Millions , float",
+        - New Shares Issued [M] : "num of new shares issued in Millions, float",
+        - Existing Shares Offered For Sale [M] : "num of exsiting shares offered for sale  in Millions, float",
+        - IPO Shares Breakdown of the Enlarged Share: (all values in Millions)
+             - Eligible Directors & Employees [M]: float,
+             - Malaysian Public [M]: float,
+             - MITI [M]: float,
+             - Others (Private placements, etc.) [M]: float
+        - Utilisation of Proceeds - Debt Funding [%]": float,
+        - Utilisation of Proceeds - Debt Funding ['000]": int,
 
     ---
     For Pro Forma related items, extract data from *PRO FORMA CONSOLIDATED STATEMENTS OF FINANCIAL POSITION* table, understand the table and extract data
@@ -406,25 +397,25 @@ You are an expert in financial analysis and IPO prospectuses. Your ABSOLUTE TOP 
             "PAT Margin [%]": float (Take Latest Financial Year Ended (FYE)),
             "Total Assets (Pro Forma) ['000]": int(total_assets_pro_forma , Take Pro Forma II values),
             "Total Liabilities (Pro Forma) ['000]": int(total_liabilities_pro_forma, Take Pro Forma II values),
-            "Total Cash ['000]": int(total_cash_and_bank_balances, Take Pro Forma II values),
+    ---
+            "Total Cash ['000]": latest total cash and cash equivalent form cash flow statement,
             "Total Interest-Bearing Borrowings ['000]": int(total_interest_bearing_borrowings),
     ---
-            "Bursa Peers (from IMR section)": "Comma-separated list",
+            "Bursa Peers (from IMR section)": 
+                - list of domestic/Malaysian companies/industry players from Independet Market Research Report (IMR report) section
+                - list both the company name and its parent, if available,
             "International Peers (from IMR section)": "Comma-separated list",
-            "MITI Application Open Date": "DD MMMM YYYY",
-            "MITI Application Close Date": "DD MMMM YYYY",
-            "MITI Payment & 2nd Document Submission Date": "DD MMMM YYYY",
-            "Oversubscription": "Oversubscription value",
-            "Price 1st Day (Open, Close)": "Opening and closing prices"
     ---
 
-Output Requirements (Must Be Followed Exactly)  
+      OUTPUT REQUIREMENTS (MUST BE FOLLOWED EXACTLY):
 
-- VALID JSON FORMAT: This is your top priority. Ensure the output is a **STRICTLY valid JSON** object.  
-- Numerical Values: Represent as numbers, not strings (e.g., 1234567.89). Percentages should be numbers (e.g., 25.0 for 25%).  
-- Arrays: Use arrays for lists (e.g., Executive Directors).  
-- Missing Information: If a field is not found, set it to `null`. Do not fabricate information.  
-- Consistency: Maintain all keys/fields from the sample JSON structure, even if values are `null`.     
+        *   THE OUTPUT MUST BE A VALID JSON OBJECT. THIS IS YOUR TOP PRIORITY.
+        *   Use clear and descriptive keys for each extracted field.
+        *   IF A SPECIFIC PIECE OF INFORMATION IS NOT FOUND IN THE TEXT, SET THE CORRESPONDING VALUE TO `null`. DO NOT MAKE UP INFORMATION.
+        *   Ensure that numerical values are represented as NUMBERS (e.g., 1234567.89), NOT STRINGS ("1234567.89").
+        *   Percentages should be represented as numbers only (e.g., 25 for 25%, 4.5 for 4.5%).
+        *   Arrays should be used to represent lists of items (e.g., a list of Executive Directors).
+        *   Include ALL the fields from the example, even if the value is `null`.
 
 Sample output:
 
@@ -538,9 +529,9 @@ Sample output:
                 ]
             }
         {
-            "Name": "Company name",
-            "Website": "Company website address",
-            "Summary": "Brief summary of the company",
+            "Name": "ABC Holdings",
+            "Website": "www.abc.xyz",
+            "Summary": "ABC holdings is a holdings comapny that made their fortune ny investing in aplhabet supplies. Founded in 1956 in Paris",
             "Market Type": "ACE/LEAP/Main",
             "Adviser": "Adviser's name",
             "Issuing House": "Issuing house name",
@@ -567,7 +558,7 @@ Sample output:
             "Profit After Tax (PAT) ['000]": int,
             "PAT (FYE) List ['000, comma-separated]": "Comma-separated values",
             "PAT (FPE) List ['000, comma-separated]": "Comma-separated values (if available)",
-            "FPE Period": "Period ending MM-DD",
+            "FPE Period": int,
             "PE (reported)": float,
             "PAT Margin [%]": float,
             "Total Assets (Pro Forma) ['000]": int,
@@ -576,11 +567,6 @@ Sample output:
             "Total Interest-Bearing Borrowings ['000]": int,
             "Bursa Peers (from IMR section)": "Comma-separated list" (see if there any footnote),
             "International Peers (from IMR section)": "Comma-separated list",
-            "MITI Application Open Date": "DD MMMM YYYY",
-            "MITI Application Close Date": "DD MMMM YYYY",
-            "MITI Payment & 2nd Document Submission Date": "DD MMMM YYYY",
-            "Oversubscription": "Oversubscription value",
-            "Price 1st Day (Open, Close)": "Opening and closing prices"
         }
   
     }
