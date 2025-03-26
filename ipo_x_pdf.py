@@ -26,7 +26,7 @@ except Exception as e:
 def analyze_text_with_gemini(pdf_path):
     """Send extracted text to Gemini AI and get structured JSON data, with improved error handling."""
     prompt = f"""
-        You are an expert in financial analysis and IPO prospectuses. Your ABSOLUTE TOP PRIORITY is to extract specific information from the provided text and output the response in a STRICTLY VALID JSON format. If information is not found, leave the corresponding field empty or null. Do not calculate or assume any values unless explicitly stated. You will extract information ONLY from the "Financial Information," "Key Financial Data," "Corporate Information," or similar sections of the IPO prospectus.
+        You are an expert in financial analysis and IPO prospectuses. Your ABSOLUTE TOP PRIORITY is to extract specific information from the provided text and output the response in a STRICTLY VALID JSON format. If information is not found, leave the corresponding field empty or null. Do not calculate or assume any values unless explicitly stated. You will extract information ONLY from the "Business Overview", "Financial Information," "Key Financial Data," "Corporate Information," "Operating Segments", or similar sections of the IPO prospectus.
 
         EXTRACT THE FOLLOWING INFORMATION:
         
