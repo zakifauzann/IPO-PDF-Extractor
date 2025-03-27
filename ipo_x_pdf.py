@@ -376,8 +376,16 @@ def analyze_text_with_gemini(pdf_path):
             * ONLY extract information from this section. Ignore information found on section other than this. 
             * Find the industry players information (in table). The information (table) can be in two or more pages.
             * Two important things here is the table, and the notes below it.
-            * Extract all company with "Berhad". DO NOT include company with "Sdn Bhd" or "S/B" it their name.
+            * Extract all company with "Berhad". DO NOT include/extract company with "Sdn Bhd" or "S/B" it their name.
             * If the table or notes indicates that the company is a subsidiary (e.g., 'Wholly owned subsidiary of Company X'), and 'Company X' (the parent company) is listed on Bursa Malaysia, extract company X and ignore the subsidiary company.
+            
+        8.  **Unbilled/Outstanding Order Book**
+
+            * Locate the Order Book/Orderbook section in the document.
+            * Extract the Unbilled/Outstanding Order Book value.
+            * If multiple figures are mentioned, provide the latest available amount.
+            * If not explicitly stated, do not assume or infer values.
+            
             
         OUTPUT REQUIREMENTS (MUST BE FOLLOWED EXACTLY):
 
@@ -393,10 +401,10 @@ def analyze_text_with_gemini(pdf_path):
     try:
         # Generate content using Gemini AI
         response = client.models.generate_content(
-            model="gemini-2.5-pro-exp-03-25",
+            model="gemini-2.0-flash",
             # gemini-2.5-pro-exp-03-25 can get pretty accurate results
             config=types.GenerateContentConfig(
-                temperature=0.3 # Low temperature for consistent outputs, low randomness
+                temperature=0.5 # Low temperature for consistent outputs, low randomness
             ),
             contents=[
                 types.Part.from_bytes(
@@ -432,7 +440,7 @@ def analyze_text_with_gemini(pdf_path):
 
 if __name__ == "__main__":
     # Specify the PDF path here:
-    pdf_path = os.path.join('pdf/3ren.pdf')  # Replace with the actual path to your PDF file
+    pdf_path = os.path.join('pdf/chemlite.pdf')  # Replace with the actual path to your PDF file
 
     if not os.path.exists(pdf_path):
         print(f"Error: PDF file '{pdf_path}' not found.")
