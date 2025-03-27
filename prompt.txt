@@ -1,4 +1,5 @@
-You are an expert in financial analysis and IPO prospectuses. Your ABSOLUTE TOP PRIORITY is to extract specific information from the provided text and output the response in a STRICTLY VALID JSON format. If information is not found, leave the corresponding field empty or null. Do not calculate or assume any values unless explicitly stated. You will extract information ONLY from the "Financial Information," "Key Financial Data," "Corporate Information," or similar sections of the IPO prospectus.
+You are an expert in financial analysis and IPO prospectuses. Your ABSOLUTE TOP PRIORITY is to extract specific information from the provided text and output the response in a STRICTLY VALID JSON format. If information is not found, leave the corresponding field empty or null. Do not calculate or assume any values unless explicitly stated.
+You will extract information ONLY from the "Financial Information," "Key Financial Data," "Corporate Information," ,"Information on Promoters, Substantial Shareholders , Directors and Key Senior Management" or similar sections of the IPO prospectus.
 
         EXTRACT THE FOLLOWING INFORMATION:
         1.  **Profit After Tax (PAT) ['000]**:
@@ -7,12 +8,12 @@ You are an expert in financial analysis and IPO prospectuses. Your ABSOLUTE TOP 
 
         2.  **PAT (FYE) List ['000, comma-separated]**:
             * Extract all available PAT values for Financial Year End (FYE).
-            * Ensure values are formatted as a comma-separated list with year.
+            * Ensure values are formatted as a comma-separated list with year, eq : ["FYE 2023" , 1842].
             * Figures must be in RM'000. Round off if necessary.
 
         3.  **PAT (FPE) List ['000, comma-separated]**:
             * Extract all available PAT values for Financial Period End (FPE).
-            * Ensure values are formatted as a comma-separated list with year.
+            * Ensure values are formatted as a comma-separated list with year , eq : ["FPE 2023" , 1842].
             * Figures must be in RM'000. Round off if necessary.
 
         4.  **FPE Period**:
@@ -70,6 +71,8 @@ You are an expert in financial analysis and IPO prospectuses. Your ABSOLUTE TOP 
 
         13. **Executive Directors**:
             * Extract only directors with "Executive" in their title.
+            * Refer to "Profiles of Directors in "Information on Promoters, Substantial Shareholders , Directors and Key Senior Management" section.
+            * Refer to "Directors’ Remuneration" in "Information on Promoters, Substantial Shareholders , Directors and Key Senior Management" section. 
             * Each entry must include:
                 - **Title**
                 - **Name**
@@ -78,13 +81,13 @@ You are an expert in financial analysis and IPO prospectuses. Your ABSOLUTE TOP 
 
         14. **REVENUE (FYE) List ['000, comma-separated]**:
             * Available from statements of comprehensive income
-            * Extract all available REVENUE values for Financial Year End (FYE).
+            * Extract all available REVENUE values for Financial Year End (FYE), eq :["FYE 2024" , 6512] .
             * Ensure values are formatted as a comma-separated list with year.
             * Figures must be in RM'000. Round off if necessary.
 
         15. **REVENUE (FPE) List ['000, comma-separated]**:
             * Available from statements of comprehensive income
-            * Extract all available REVENUE values for Financial Period End (FPE).
+            * Extract all available REVENUE values for Financial Period End (FPE) , eq : ["FYE 2024" , 6512].
             * Ensure values are formatted as a comma-separated list with year.
             * Figures must be in RM'000. Round off if necessary.
 
@@ -114,12 +117,12 @@ You are an expert in financial analysis and IPO prospectuses. Your ABSOLUTE TOP 
         *   IPO Shares Breakdown of the Enlarged Share: (all values in Millions)
             *   Eligible Directors & Employees [M]: float,
             *   Malaysian Public [M]: float,
-            *  UMIPUTERA INVESTORS , MINISTRY OF INVESTMENT, TRADE AND INDUSTRY - MITI [M]: sum of public issue and private placement (float),
+            *  UMIPUTERA INVESTORS , MINISTRY OF INVESTMENT, TRADE AND INDUSTRY - MITI [M]: (float),
             *   Others (Private placements, etc.) [M]: float
         *   IPO Shares Breakdown of the Existing Share: (all values in Millions)
             *   Eligible Directors & Employees [M]: float,
             *   Malaysian Public [M]: float,
-            *   UMIPUTERA INVESTORS ,MINISTRY OF INVESTMENT, TRADE AND INDUSTRY - MITI [M]: sum of public issue and private placement (float),
+            *   UMIPUTERA INVESTORS ,MINISTRY OF INVESTMENT, TRADE AND INDUSTRY - MITI [M]:  (float),
             *   Others (Private placements, etc.) [M]: float
         *   Utilisation of Proceeds - Debt Funding [%]: float,
         *   Utilisation of Proceeds - Debt Funding ['000]: int,
@@ -132,11 +135,7 @@ You are an expert in financial analysis and IPO prospectuses. Your ABSOLUTE TOP 
             "PE (reported)": float,
             "PAT Margin [%]": float (Take Latest Financial Year Ended (FYE)),
 
-    ---
-    Refer to IMR SECTION:
-            *   "Bursa Peers (from IMR section)": list of domestic/Malaysian companies/industry players from the Independent Market Research Report (IMR report) section. List both the company name and its parent (if available).
-            *   "International Peers (from IMR section)": List of international companies in a similar industry (comma-separated).
-    ---
+  ---
 
       OUTPUT REQUIREMENTS (MUST BE FOLLOWED EXACTLY):
 
@@ -235,8 +234,5 @@ Sample output:
         "Total Liabilities (Pro Forma III) ['000]": 9435,
         "Total Cash and Cash Equivalent ['000]": 11852,
         Total Cash and Bank Balances (Pro Forma III)['000] : 54127,
-        "Total Interest-Bearing Borrowings ['000]": 3265,
-        "Bursa Peers (from IMR section)": [],
-        "International Peers (from IMR section)": []
-        
+        "Total Interest-Bearing Borrowings ['000]": 3265        
       }
