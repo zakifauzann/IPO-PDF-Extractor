@@ -26,7 +26,10 @@ except Exception as e:
 def analyze_text_with_gemini(pdf_path):
     """Send extracted text to Gemini AI and get structured JSON data, with improved error handling."""
     prompt = f"""
-        You are an expert in financial analysis and IPO prospectuses. Your ABSOLUTE TOP PRIORITY is to extract specific information from the provided text and output the response in a STRICTLY VALID JSON format. If information is not found, leave the corresponding field empty or null. Do not calculate or assume any values unless explicitly stated. You will extract information ONLY from the "Business Overview", "Financial Information," "Key Financial Data," "Corporate Information," "Operating Segments", or similar sections of the IPO prospectus.
+        You are an expert in financial analysis and IPO prospectuses. 
+        Your ABSOLUTE TOP PRIORITY is to extract specific information from the provided text and output the response in a STRICTLY VALID JSON format. 
+        If information is not found, leave the corresponding field empty or null. Do not calculate or assume any values unless explicitly stated. 
+        You will extract information ONLY from the "Business Overview", "Financial Information," "Key Financial Data," "Corporate Information," "Operating Segments", or similar sections of the IPO prospectus.
 
         EXTRACT THE FOLLOWING INFORMATION:
         
@@ -367,6 +370,15 @@ def analyze_text_with_gemini(pdf_path):
             "Solar Power Producer CGPP", "Disruptive Innovation", "Data Center Contractors", "Data Center MEPs",
             "Renewable Energy", "Renewable Energy Electricity"
             
+        7.  **Bursa Peers**
+            
+            * Go to Industry Overview or Competitive Overview or similar section and find Independent Market Research Report or IMR Report.
+            * ONLY extract information from this section. Ignore information found on section other than this. 
+            * Find the industry players information (in table). The information (table) can be in two or more pages.
+            * Two important things here is the table, and the notes below it.
+            * Extract all company with "Berhad". DO NOT include company with "Sdn Bhd" or "S/B" it their name.
+            * If the table or notes indicates that the company is a subsidiary (e.g., 'Wholly owned subsidiary of Company X'), and 'Company X' (the parent company) is listed on Bursa Malaysia, extract company X and ignore the subsidiary company.
+            
         OUTPUT REQUIREMENTS (MUST BE FOLLOWED EXACTLY):
 
         *   THE OUTPUT MUST BE A VALID JSON OBJECT. THIS IS YOUR TOP PRIORITY.
@@ -381,9 +393,10 @@ def analyze_text_with_gemini(pdf_path):
     try:
         # Generate content using Gemini AI
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.5-pro-exp-03-25",
+            # gemini-2.5-pro-exp-03-25 can get pretty accurate results
             config=types.GenerateContentConfig(
-                temperature=0.3  # Low temperature for consistent outputs, low randomness
+                temperature=0.3 # Low temperature for consistent outputs, low randomness
             ),
             contents=[
                 types.Part.from_bytes(
@@ -419,7 +432,7 @@ def analyze_text_with_gemini(pdf_path):
 
 if __name__ == "__main__":
     # Specify the PDF path here:
-    pdf_path = os.path.join('pdf/chb.pdf')  # Replace with the actual path to your PDF file
+    pdf_path = os.path.join('pdf/3ren.pdf')  # Replace with the actual path to your PDF file
 
     if not os.path.exists(pdf_path):
         print(f"Error: PDF file '{pdf_path}' not found.")
