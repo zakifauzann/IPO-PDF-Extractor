@@ -1,411 +1,141 @@
-You are an expert in financial analysis and IPO prospectuses. Your ABSOLUTE TOP PRIORITY is to extract specific information from the provided text and output the response in a STRICTLY VALID JSON format. If information is not found, leave the corresponding field empty or null. Do not calculate or assume any values unless explicitly stated. You will extract information ONLY from the "Financial Information," "Key Financial Data," "Corporate Information," or similar sections of the IPO prospectus.
+You are an expert in financial analysis and IPO prospectuses. Your ABSOLUTE TOP PRIORITY is to extract specific information from the provided text and output the response in a STRICTLY VALID JSON format. If information is not found, leave the corresponding field empty or null. Do not calculate or assume any values unless explicitly stated.
+You will extract information ONLY from the "Financial Information," "Key Financial Data," "Corporate Information," ,"Information on Promoters, Substantial Shareholders , Directors and Key Senior Management" or similar sections of the IPO prospectus.
 
         EXTRACT THE FOLLOWING INFORMATION:
-        
-        Strictly only extract data focusing specifically on the latest Financial Year Ended (FYE) results. Exclude any Financial Period Ended (FPE) data. Be careful of unit used in the document, for example RM'000 or RM Million or just simply RM (round off to become RM'000).
-
         1.  **Profit After Tax (PAT) ['000]**:
-            * TYou MUST take values of latest FYE.
-            * Ensure all figures are in RM'000 (Ringgit Malaysia thousands).
+            * Take the value of the latest Financial Year End (FYE) only, AVOID Financial Period Ended (FPE)
+            * Ensure the figure is in RM'000 (Ringgit Malaysia thousands).  Round off if necessary.
 
         2.  **PAT (FYE) List ['000, comma-separated]**:
             * Extract all available PAT values for Financial Year End (FYE).
-            * Ensure values are formatted as a comma-separated list.
-            * Figures must be in RM'000.
+            * Ensure values are formatted as a comma-separated list with year, eq : ["FYE 2023" , 1842].
+            * Figures must be in RM'000. Round off if necessary.
 
         3.  **PAT (FPE) List ['000, comma-separated]**:
             * Extract all available PAT values for Financial Period End (FPE).
-            * Ensure values are formatted as a comma-separated list.
-            * Figures must be in RM'000.
+            * Ensure values are formatted as a comma-separated list with year , eq : ["FPE 2023" , 1842].
+            * Figures must be in RM'000. Round off if necessary.
 
         4.  **FPE Period**:
-            * Extract the financial period duration in month.
-            * Calculate the financial period duration in month state the period number only.
-            * Example: 9
+            * Extract the financial period duration in months.
+            * Return the period number only (e.g., 9 for 9 months).
 
         5.  **PE (Price-to-Earnings Ratio, reported)**:
-            * Extract the officially reported PE ratio of the latest FYE year.
+            * Extract the officially reported PE ratio for the latest FYE year.
             * Ensure it is represented as a numerical value.
 
         6.  **PAT Margin [%]**:
-            * Extract the PAT margin percentage.
-            * Represent as a percentage (e.g. 25 as 25%).
+            * Extract the PAT margin percentage for the latest FYE.
+            * Represent as a percentage (e.g., 25 for 25%, 4.5 for 4.5%).
 
-        7.  **Total Assets (Pro Forma) ['000]**:
-            * Extract total assets under pro forma adjustments.
-            * Figures must be in RM'000.
+        For Pro Forma related items, extract data from the *PRO FORMA CONSOLIDATED STATEMENTS OF FINANCIAL POSITION* table.
 
-        8.  **Total Liabilities (Pro Forma) ['000]**:
-            * Extract total liabilities under pro forma adjustments.
-            * Figures must be in RM'000.
+        7.  **Total equity and liabilities (Pro Forma III) ['000]**:
+            * Extract current *total equity and liabilities* under the *PRO FORMA CONSOLIDATED STATEMENT OF FINANCIAL POSITION* table ONLY.
+            * AVOID : "Total Equity", only a part of Total Equity and Liabilities
+            * Take the values of Pro Forma III.  If Pro Forma III doesn't exist, use the latest Pro Forma available.
+            * Return *only* the current *Total equity and Liabilities* row value.
+            * Figures must be in RM'000. Round off if necessary.
 
-        9.  **Total Cash ['000]**:
-            * Extract the latest total cash available in current assets section.
-            * Figures must be in RM'000.
+        8.  **Total Liabilities (Pro Forma III) ['000]**:
+            * Extract Pro Forma III values. If Pro Forma III doesn't exist, use the latest Pro Forma available.
+            * Extract total liabilities under the *PRO FORMA CONSOLIDATED STATEMENT OF FINANCIAL POSITION*.
+            * Figures must be in RM'000. Round off if necessary.
 
-        10. **Total Interest-Bearing Borrowings ['000]**:
+        9. **Total Cash and Bank Balances (Pro Forma III)['000]**:
+            * Extract Pro Forma III values. If Pro Forma III doesn't exist, use the latest Pro Forma available.
+            * Extract the latest **Cash and Bank Balances**
+            * ONLY extract cash and bank balances for thsi section
+            * Figures must be in RM'000. Round off if necessary.
+
+        10.  **Total Cash and Cash Equivalent ['000]**:
+            * Available in Financial Information section, Cash and Cash Equivalents item.
+            * AVOID : "Cash and Bank Balances", this is only a part fo cash and cash equivalents.
+            * Extract the latest **total cash and cash equivalents at the END of the financial year/period** available primarily from the *balance sheet*. Include bank balances, fixed deposits etc.
+            * Figures must be in RM'000. Round off if necessary.
+
+        11. **Total Interest-Bearing Borrowings ['000]**:
             * Extract total borrowings that bear interest.
-            * Figures must be in RM'000.
+            * Figures must be in RM'000. Round off if necessary.
 
-        11. **Use of Proceeds**:
-            * Extract detailed breakdown of IPO proceeds.
-            * For category choose between these: Business Expansion, Debt Repayment, Working Capital, Listing Expenses and Others. 
-            * Each entry must accurately include without any round-off:
+        12. **Use of Proceeds**:
+            * Extract detailed breakdown of IPO proceeds / Utilisation of Proceeds.
+            * For category, choose between these: Business Expansion, Debt Repayment, Working Capital, Listing Expenses, and Others.
+            * Each entry must accurately include *without any round-off*:
                 - **Category** (e.g., Expansion, Debt Repayment)
                 - **Purpose**
                 - **Amount (RM'000)**
                 - **Percentage (%)**
-                - **Time Frame in numbers (1-100)**
+                - **Time Frame in numbers (1-12)**
+                - **Highlights**: A short explanation (around 50 words) on where and how the proceeds are going to be used, using context from the report.
 
-        12. **Executive Directors**:
+        13. **Executive Directors**:
             * Extract only directors with "Executive" in their title.
+            * Refer to "Profiles of Directors in "Information on Promoters, Substantial Shareholders , Directors and Key Senior Management" section.
+            * Refer to "Directors’ Remuneration" in "Information on Promoters, Substantial Shareholders , Directors and Key Senior Management" section. 
             * Each entry must include:
                 - **Title**
                 - **Name**
-                - **Total Remuneration** (sum up salary, bonuses, others if applicable)
-                - **Age** (only if explicitly stated, or try to find in text if not available in table; do not estimate)
+                - **Total Remuneration** (sum salary, bonuses, and other applicable emoluments)
+                - **Age** (only if explicitly stated; do not estimate or search the text)
 
-        13. **Geographical Segments**:
-            * Extract total revenue per geographical segment.
-            * Take all geographical segments for the latest Financial Year Ended(FYE).
-            * You MUST take values of latest Financial Year Ended(FYE) (search values under the latest FYE year).
-            * You MUST use the values of the TOTAL revenues.
-            * You MUST calculate the percentage based on the total revenue.
-            * Show percentage as floats, eq, 2.25% -> 2.25
-            * If the segment data is not found, return null.
-            * Figures must be in RM'000.
+        14. **REVENUE (FYE) List ['000, comma-separated]**:
+            * Available from statements of comprehensive income
+            * Extract all available REVENUE values for Financial Year End (FYE), eq :["FYE 2024" , 6512] .
+            * Ensure values are formatted as a comma-separated list with year.
+            * Figures must be in RM'000. Round off if necessary.
 
-        14. **Business Segments**:
-            * Extract total revenue per business segment.
-            * You MUST take values of latest Financial Year Ended(FYE) (search values under the latest FYE year).
-            * You MUST use the values of the TOTAL revenues.
-            * You MUST calculate the percentage based on the total revenue.
-            * Show percentage as floats, eq, 2.25% -> 2.25
-            * If the segment data is not found, return null.
-            * Figures must be in RM'000.
-
-        15. **Major Customers**:
-        * Extract all major customers and their total revenue contribution for the latest FYE. Include anonymous customers (Customer A etc.)
-        * You MUST take values of latest Financial Year Ended(FYE) (search values under the latest FYE year).
-        * Each entry must include:
-            - **Name/Segment**
-            - **Total Revenue (RM'000)**
-            - **Percentage (%)**
-            - Show percentage as floats, eq, 2.25% -> 2.25
-        * If a table states "-" for revenue, consider it null.
-
-        16. **Corporate Structure**:
-            * Extract details on subsidiaries and associates.
-            * Each entry must include:
-                - **Name**
-                - **Principal Activities**
-                - **Ownership Percentage**
-            * Classify ownership as:
-                - **Subsidiaries** (own >= 50%)
-                - **Associates** (own < 50%)kkkkk
-                
-        17. **Sector:**
-            * Determine and specify the company's sector and sub sector.
-            * Find the these keywords in the document.
-            * Refer the table below, do not make any assumptions:
-            
-            Sector              Sub Sector          Definition
-            -----------------------------------------------------------------------------------------------------
-            1                   1.1                 Companies engaged in the construction of commercial and
-            CONSTRUCTION        CONSTRUCTION        residential buildings, infrastructure such as railways, highways,
-                                                    roads and providers of building construction-related services
-                                                    such as architects, interior design
-            
-            2                   2.1                 Companies that raise livestock and operate fisheries. Includes
-            CONSUMER            AGRICULTURAL        manufacturers of livestock feeds
-            PRODUCTS &          PRODUCTS
-            SERVICES
-                                2.2                 Companies that produce and distribute passenger automobiles
-                                AUTOMOTIVE
-            
-                                2.3                 Businesses not covered in the other prescribed sub sectors
-                                CONSUMER            under Consumer Products & Services
-                                SERVICES
-            
-                                2.4                 Food or beverages producers including packaged foods, dairy
-                                FOOD/BEVERAGES      products, brewers, soft drinks
-            
-                                2.5                 Manufacturers and distributors of household products including
-                                HOUSEHOLD GOODS     furniture, kitchenware, consumer electronics
-            
-                                2.6                 Manufacturers and distributers of personal products including
-                                PERSONAL GOODS      textiles, apparel, footwear, jewellery, timepieces, accessories,
-                                                    cosmetics, personal care, tobacco
-            
-                                2.7                 Owners and operators of retail stores including direct marketing
-                                RETAILERS
-            
-                                2.8                 Companies providing travel and tourism related services
-                                TRAVEL, LEISURE &   includes airlines, gambling, hotels, restaurants and recreational
-                                HOSPITALITY         services
-            
-            3                   3.1                 Suppliers of equipment and services to oil and gas producers
-            ENERGY              ENERGY              such as drilling, exploration, platform construction
-                                INFRASTRUCTURE,
-                                EQUIPMENT &
-                                SERVICES
-            
-                                3.2                 Companies engaged in the exploration and production of oil and
-                                OIL & GAS           gas
-                                PRODUCERS
-            
-                                3.3                 Companies that produce alternative energy including alternative
-                                OTHER ENERGY        fuels
-                                RESOURCES
-            
-                                3.4                 Companies that provide equipment and services involved in
-                                RENEWABLE ENERGY    producing renewable energy
-            
-            -----------------------------------------------------------------------------------------------------
-            
-            Sector              Sub Sector          Definition
-            -----------------------------------------------------------------------------------------------------
-            4                   4.1                 Banks providing a broad range of financial services, including
-            FINANCIAL           ΒΑΝΚING             retail banking, loans and money transmissions
-            SERVICES
-        
-                                4.2                 Insurance companies with products in life, health, property and
-                                INSURANCE           casualty insurance, takaful
-            
-                                4.3                 Companies engaged in financial activities not specified
-                                OTHER               elsewhere, include stock exchanges, securities, asset
-                                FINANCIALS          management companies and other service providers to financial
-                                                    institutions
-            
-            5                   5.1                 Manufacturers and distributors of health care equipment and
-            HEALTH CARE         HEALTH CARE         providers of health care services includes lab testing services,
-                                EQUIPMENT &         dialysis centers
-                                SERVICES
-            
-                                5.2                 Owners and operators of health care facilities including
-                                HEALTH CARE         hospitals, clinics, nursing homes, rehabilitation centres
-                                PROVIDERS
-            
-                                5.3                 Companies engaged in the research, development, production
-                                PHARMACEUTICALS     or distribution of pharmaceuticals
-            
-            6                   6.1                 Manufacturers and distributors of parts and accessories for
-            INDUSTRIAL          AUTO PARTS          automobiles and motorcycles such as tires, batteries, engines
-            PRODUCTS &
-            SERVICES
-            
-                                6.2                 Manufacturers and wholesalers of building materials including
-                                BUILDING            cement, concrete, tiles and paint
-                                MATERIALS
-            
-                                6.3                 Companies that primarily produce and distribute chemicals for
-                                CHEMICALS           industry use. Includes plastics and rubber in their raw form or
-                                                    molded plastic products, polymers, adhesives, dyes, coatings
-                                                    and other chemicals for specialised applications
-            
-                                6.4                 Diversified companies with business activities in three or more
-                                DIVERSIFIED         sectors of which none contributes substantial revenue
-                                INDUSTRIALS
-            
-                                6.5                 Manufacturers and distributors of heavy machinery and
-                                INDUSTRIAL          engineering equipment
-                                ENGINEERING
-            
-                                6.6                 Manufacturers and distributors of industrial machinery and
-                                INDUSTRIAL          components which includes machine tools, castings and
-                                MATERIALS,          moulding equipment, presses, compressors, elevators and
-                                COMPONENTS &        escalators
-                                EQUIPMENT
-            
-            -----------------------------------------------------------------------------------------------------
-            
-            Sector              Sub Sector              Definition
-            -----------------------------------------------------------------------------------------------------
-            7                   6.7                 Businesses not covered in the other prescribed sub sectors
-            PLANTATION          INDUSTRIAL          under Industrial Products & Services
-                                SERVICES
-            
-                                6.8                 Producers and traders of metals and metal products which
-                                METALS              includes iron, aluminium and steel
-            
-                                6.9                 Manufacturers & distributors of paper, containers, cardboard,
-                                PACKAGING           bags, boxes and cans used for packaging
-                                MATERIALS
-            
-                                6.10                Manufacturers and distributors of timber and related wood
-                                WOOD AND WOOD       products
-                                PRODUCTS
-            
-            8                   7.1                 Companies engaged in the cultivation, planting and/or replanting
-            PROPERTY            PLANTATION          of crops
-            
-                                8.1                 Companies that invest in real estate through development,
-                                PROPERTY            investment and ownership including real estate service providers
-                                                    such as real estate brokers, agencies, leasing companies,
-                                                    management companies and advisory services
-            
-            9                   9.1                 Real estate investment trusts that focus investment in a portfolio
-            REAL ESTATE         REAL ESTATE         of income-generating properties such as shopping malls, hotels,
-            INVESTMENT          INVESTMENT          offices and service apartments
-            TRUSTS              TRUSTS
-            
-            10                  10.1                Companies providing internet-related services such as Internet
-            TECHNOLOGY          DIGITAL             access providers, search engines and providers of website
-                                SERVICES            design, web hosting and e-mail services including companies
-                                                    that provide solutions and platforms for e-commerce or
-                                                    electronic payments
-            
-                                10.2                Companies engaged in the manufacturing and distribution of
-                                SEMICONDUCTORS      semiconductors and semiconductor equipment
-            
-                                10.3                Companies engaged in developing and producing software
-                                SOFTWARE            designed for specialised application such as systems software,
-                                                    enterprise and technical software, mobile application
-            
-                                10.4                Manufacturers and distributors of technology hardware and
-                                TECHNOLOGY          equipment such as computers, servers, mainframes,
-                                EQUIPMENT           workstations and related peripherals such as mass-storage
-                                                    drives, motherboards, monitors, keyboards, printers, smartcards
-            
-            -----------------------------------------------------------------------------------------------------
-            
-            Sector              Sub Sector          Definition
-            -----------------------------------------------------------------------------------------------------
-            11                  11.1                Companies providing advertising, public relations and marketing
-            TELECOMMUNICATIONS  MEDIA               services includes producers, operators and broadcasters of
-            & MEDIA                                 radio, television, music and filmed entertainment, publishers of
-                                                    information via printed or electronic media
-            
-                                11.2                Producers and distributors of telecommunication equipment
-                                TELECOMMUNICATIONS  such as satelites, LANs, WANs, routers, mobile telephones,
-                                EQUIPMENT           fibers optics, teleconferencing equipment
-            
-                                11.3                Providers of mobile and fixed-line telecommunication networks
-                                TELECOMMUNICATIONS  and providers of satelite and wireless data communication
-                                SERVICE             solutions and related services
-                                PROVIDERS
-            
-            12                  12.1                Companies providing transportation services including
-            TRANSPORTATION      TRANSPORTATION      companies that manage airports, train depots, ports and
-            & LOGISTICS         & LOGISTICS         providers of courier and logistic services
-                                SERVICES
-            
-                                12.2                Manufacturers and distributors of transportation equipment
-                                TRANSPORTATION      includes shipbuilding
-                                EQUIPMENT
-            
-            13                  13.1                Companies that produce or distribute electricity
-            UTILITIES           ELECTRICITY
-            
-                                13.2                Companies providing water or distribute gas to end-users or
-                                GAS, WATER &        utility companies with significant presence in more than one
-                                MULTI-UTILITIES     utility
-            
-                                13.3                Companies that produce or distribute electricity through a
-                                RENEWABLE ENERGY    renewable energy source
-                                ELECTRICITY
-            
-            14                  14.1                Close-ended investment entities
-            CLOSED END FUND     CLOSED END FUND
-            
-            15                  15.1                Special purpose acquisition companies
-            SPECIAL             SPECIAL
-            PURPOSE             PURPOSE
-            ACQUISITION         ACQUISITION
-            COMPANY             COMPANY
-            
-            16                  16.1                Conventional fixed income securities that are listed and traded
-            BOND                CONVENTIONAL-MGS    on the stock market
-            CONVENTIONAL
-            
-                                16.2                Conventional fixed income securities that are listed and traded
-                                CONVENTIONAL-GG     on the stock market
-            
-                                16.3                Conventional fixed income securities that are listed and traded
-                                CONVENTIONAL-PDS    on the stock market
-            
-            -----------------------------------------------------------------------------------------------------
-            
-            Sector              Sub Sector          Definition
-            -----------------------------------------------------------------------------------------------------
-            17                  17.1                Shariah Compliant fixed income securities that are listed and
-            BOND ISLAMIC        ISLAMIC-GII         traded on the stock market
-            
-                                17.2                Shariah Compliant fixed income securities that are listed and
-                                ISLAMIC-GG          traded on the stock market
-            
-                                17.3                Shariah Compliant fixed income securities that are listed and
-                                ISLAMIC-PDS         traded on the stock market
-            
-            18                  18.1                Open-ended investment entities
-            EXCHANGE            COMMODITY FUND
-            TRADED FUND-
-            COMMODITY
-            
-            19                  19.1                Open-ended investment entities
-            EXCHANGE            EQUITY FUND
-            TRADED FUND-
-            EQUITY
-            
-            20                  20.1                Open-ended investment entities
-            EXCHANGE            BOND FUND
-            TRADED FUND-
-            BOND
-            
-            21                  21.1                Business enterprises that are set up as trust, instead of
-            BUSINESS            BUSINESS TRUST      companies. They are hybrid structures with elements of both
-            TRUST                                   companies and trusts and created by a trust deed
+        15. **REVENUE (FPE) List ['000, comma-separated]**:
+            * Available from statements of comprehensive income
+            * Extract all available REVENUE values for Financial Period End (FPE) , eq : ["FYE 2024" , 6512].
+            * Ensure values are formatted as a comma-separated list with year.
+            * Figures must be in RM'000. Round off if necessary.
 
 
-    Section B: Extract the following fields  
-           
-        - Name : "Company name",
-        - Website: "Company website address",
-        - Summary: " Around 100 words brief summary of the company and its subsidiaries, what businesses are they doing? Where they are incorporated? ",
-        - Code: "company stock code/null",
-        - Symbol: "company stock symbol/null",
-        - Market Type: "ACE/LEAP/Main , where the company is going to be listed",
-        - Adviser: "Adviser's name",
-        - Issuing House: "Issuing house name",
-        - Last Exposure Date (Draft Prospectus): "DD MMMM YYYY",
-        - Pre Shariah (Publish) : "COMPLIANT/NOT-COMPLIANT",
-        - Pre Shariah (BIS) : "COMPLIANT/NOT-COMPLIANT",
-        - Pre Shariah (SC) : "COMPLIANT/NOT-COMPLIANT",
-        - Pre Shariah Ratio : "Whats the pre-shariah ratio, if stated",
-        - Closing Date : "DD MMMM YYYY",
-        - Balloting Date : "DD MMMM YYYY",
-        - Listing Date : "DD MMMM YYYY",
-        - Listing Price"  float,
-        - Num of Shares (Enlarged) [M]: "num of enlarged shares in Millions , float",
-        - New Shares Issued [M] : "num of new shares issued in Millions, float",
-        - Existing Shares Offered For Sale [M] : "num of exsiting shares offered for sale  in Millions, float",
-        - IPO Shares Breakdown of the Enlarged Share: (all values in Millions)
-             - Eligible Directors & Employees [M]: float,
-             - Malaysian Public [M]: float,
-             - MITI [M]: float,
-             - Others (Private placements, etc.) [M]: float
-        - Utilisation of Proceeds - Debt Funding [%]": float,
-        - Utilisation of Proceeds - Debt Funding ['000]": int,
+    Section B: Extract the following fields
+
+        *   Name: "Company name",
+        *   Website: "Company website address",
+        *   Summary: "Around 100 words brief summary of the company and its subsidiaries: what businesses are they doing? Where are they incorporated?",
+        *   Code: "Company stock code or null if not found",
+        *   Symbol: "Company stock symbol or null if not found",
+        *   Market Type: "ACE, LEAP, or Main (where the company is going to be listed)",
+        *   Adviser: "Adviser's name",
+        *   Issuing House: "Issuing house name",
+        *   Last Exposure Date (Draft Prospectus): "DD MMMM YYYY",
+        *   Pre Shariah (Publish): "COMPLIANT or NOT-COMPLIANT or null if not found",
+        *   Pre Shariah (BIS): "COMPLIANT or NOT-COMPLIANT or null if not found",
+        *   Pre Shariah (SC): "COMPLIANT or NOT-COMPLIANT or null if not found",
+        *   Pre Shariah Ratio: "The pre-shariah ratio, if stated; otherwise null",
+        *   Closing Date: "DD MMMM YYYY",
+        *   Balloting Date: "DD MMMM YYYY",
+        *   Listing Date: "DD MMMM YYYY",
+        *   Listing Price: float,
+        *   Num of Shares (Enlarged) [M]: "Number of enlarged shares in Millions (float)",
+        *   New Shares Issued [M]: "Number of new shares issued in Millions (float)",
+        *   Existing Shares Offered For Sale [M]: "Number of existing shares offered for sale in Millions (float)",
+        *   IPO Shares Breakdown of the Enlarged Share: (all values in Millions)
+            *   Eligible Directors & Employees [M]: float,
+            *   Malaysian Public [M]: float,
+            *  UMIPUTERA INVESTORS , MINISTRY OF INVESTMENT, TRADE AND INDUSTRY - MITI [M]: (float),
+            *   Others (Private placements, etc.) [M]: float
+        *   IPO Shares Breakdown of the Existing Share: (all values in Millions)
+            *   Eligible Directors & Employees [M]: float,
+            *   Malaysian Public [M]: float,
+            *   UMIPUTERA INVESTORS ,MINISTRY OF INVESTMENT, TRADE AND INDUSTRY - MITI [M]:  (float),
+            *   Others (Private placements, etc.) [M]: float
+        *   Utilisation of Proceeds - Debt Funding [%]: float,
+        *   Utilisation of Proceeds - Debt Funding ['000]: int,
 
     ---
-    For Pro Forma related items, extract data from *PRO FORMA CONSOLIDATED STATEMENTS OF FINANCIAL POSITION* table, understand the table and extract data
             "Profit After Tax (PAT) ['000]": int (Take Latest Financial Year Ended (FYE)),
             "PAT (FYE) List ['000, comma-separated]": "Comma-separated values",
             "PAT (FPE) List ['000, comma-separated]": "Comma-separated values (if available)",
             "FPE Period": ,
             "PE (reported)": float,
             "PAT Margin [%]": float (Take Latest Financial Year Ended (FYE)),
-            "Total Assets (Pro Forma) ['000]": int(total_assets_pro_forma , Take Pro Forma II values),
-            "Total Liabilities (Pro Forma) ['000]": int(total_liabilities_pro_forma, Take Pro Forma II values),
-    ---
-            "Total Cash ['000]": latest total cash and cash equivalent form cash flow statement,
-            "Total Interest-Bearing Borrowings ['000]": int(total_interest_bearing_borrowings),
-    ---
-            "Bursa Peers (from IMR section)": 
-                - list of domestic/Malaysian companies/industry players from Independet Market Research Report (IMR report) section
-                - list both the company name and its parent, if available,
-            "International Peers (from IMR section)": "Comma-separated list",
-    ---
+
+  ---
 
       OUTPUT REQUIREMENTS (MUST BE FOLLOWED EXACTLY):
 
@@ -420,153 +150,89 @@ You are an expert in financial analysis and IPO prospectuses. Your ABSOLUTE TOP 
 Sample output:
 
 {
-        "use_of_proceeds": [
-            {
-            "Category": "Business Expansion",
-            "Purpose": "Purchase of machineriess",
-            "Amount (RM'000)": 1542,
-            "Percentage (%)": 17.1,
-            "Time Frame in numbers": 12
-        },      
-        ],
-
-        "executive_directors": [
-            {
-            "title": "Chief Executive Officer",
-            "name": "Alice Johnson",
-            "age": 55,
-            "remuneration": {
-                "salary": 1200000,
-                "directorFees": 30000,
-                "meetingAllowance": 2500,
-                "otherEmoluments": 230623
-                },
-            "total remuneration" : 1463123
-            "remuneration_currency_unit":"RM"
-            },
-    
-        ],
-        "geographical_segments": [
-            {
-            "segment": "Malaysia",
-            "total_revenue": 500000000.00,
-            "percentage": 0.60
-            },
-            {
-            "segment": "Thailand",
-            "total_revenue": 250000000.00,
-            "percentage": 0.30
-            },
-            {
-            "segment": "China",
-            "total_revenue": 83333333.33,
-            "percentage": 0.10
-            }
-        ],
-        "business_segments": [
-            {
-            "segment": "Software",
-            "total_revenue" : 4500000.00,
-            "currency_unit" : "RM'000",
-            "percentage": 0.48
-            },
-            {
-            "segment": "Manufacturing",
-            "total_revenue": 350000000.00,
-            "currency_unit" : "RM'000",
-            "percentage": 0.42
-            }
-        ],
-        "major_customers": [
-            {
-            "customer name": "Customer 2",
-            "segment" : "construction"
-            "total_revenue": 0,
-            "currency_unit" : "RM'000"
-            "percentage": 0,
-            },
-            {
-            "customer name": "Customer C",
-            "segment" : "construction"
-            "total_revenue": 75000000.00,
-            "currency_unit" : "RM'000"
-            "percentage": 0.09,
-            }
-        ],
-        "corporate_structure": {
-            "subsidiaries": [
-            {
-                "name": "Alpha Ltd",
-                "principal_activities": "Software Development",
-                "ownership_percentage": 0.80
-            },
-            {
-                "name": "Gamma Corp",
-                "principal_activities": "Hardware Manufacturing",
-                "ownership_percentage": 1.00
-            }
-            ],
-            "associates": [
-            {
-                "name": "Delta Inc",
-                "principal_activities": "Research and Development",
-                "ownership_percentage": 0.30
-            }
-            ],
-            "unknown_ownership": [
-            {
-                "name": "Epsilon Group",
-                "principal_activities": "Marketing and Sales"
-            }
-            ]
+    "use_of_proceeds": [
+      {
+        "Category": "Business Expansion",
+        "Purpose": "Purchase of machineries",
+        "Amount (RM'000)": 1542,
+        "Percentage (%)": 17.1,
+        "Time Frame in numbers": 12,
+        "Highlight": "set up our own dedicated Delivery of our customers"
+      }
+    ],
+    "executive_directors": [
+      {
+        "title": "Chief Executive Officer",
+        "name": "Alice Johnson",
+        "age": 55,
+        "remuneration": {
+          "salary": 1200000,
+          "directorFees": 30000,
+          "meetingAllowance": 2500,
+          "otherEmoluments": 230623
         },
-            {
-            "Sector" : [
-                {
-                "sector" : "UTILITIES"
-                "sub-sector" : "ELECTRICITY"
-                }
-                ]
-            }
-        {
-            "Name": "ABC Holdings",
-            "Website": "www.abc.xyz",
-            "Summary": "ABC holdings is a holdings comapny that made their fortune ny investing in aplhabet supplies. Founded in 1956 in Paris",
-            "Market Type": "ACE/LEAP/Main",
-            "Adviser": "Adviser's name",
-            "Issuing House": "Issuing house name",
-            "Last Exposure Date (Draft Prospectus)": "DD MMMM YYYY",
-            "Pre Shariah (Publish)": "COMPLIANT/NOT-COMPLIANT/null",
-            "Pre Shariah (BIS)": "COMPLIANT/NOT-COMPLIANT/null",
-            "Pre Shariah (SC)": "COMPLIANT/NOT-COMPLIANT/null",
-            "Pre Shariah Ratio": "COMPLIANT/NOT-COMPLIANT/null",
-            "Closing Date": "DD MMMM YYYY",
-            "Balloting Date": "DD MMMM YYYY",
-            "Listing Date": "DD MMMM YYYY",
-            "Listing Price": float,
-            "Num of Shares (Enlarged) [M]": float,
-            "New Shares Issued [M]": float,
-            "Existing Shares Offered For Sale [M]": float,
-            "IPO Shares Breakdown of the Enlarged Share": {
-                "Eligible Directors & Employees [M]": float,
-                "Malaysian Public [M]": float,
-                "MITI [M]": float,
-                "Others (Private placements, etc.) [M]": float
-            },
-            "Utilisation of Proceeds - Debt Funding [%]": float,
-            "Utilisation of Proceeds - Debt Funding ['000]": float,
-            "Profit After Tax (PAT) ['000]": int,
-            "PAT (FYE) List ['000, comma-separated]": "Comma-separated values",
-            "PAT (FPE) List ['000, comma-separated]": "Comma-separated values (if available)",
-            "FPE Period": int,
-            "PE (reported)": float,
-            "PAT Margin [%]": float,
-            "Total Assets (Pro Forma) ['000]": int,
-            "Total Liabilities (Pro Forma) ['000]": int,
-            "Total Cash and Cash Equivalents['000]": int,
-            "Total Interest-Bearing Borrowings ['000]": int,
-            "Bursa Peers (from IMR section)": "Comma-separated list" (see if there any footnote),
-            "International Peers (from IMR section)": "Comma-separated list",
-        }
+        "total remuneration": 1463123,
+        "remuneration_currency_unit": "RM"
+      }
+    ],
   
-    }
+        "Name": "ABC Holdings",
+        "Website": "www.abc.xyz",
+        "Summary": "ABC holdings is a holdings comapny that made their fortune ny investing in aplhabet supplies. Founded in 1956 in Paris",
+        "Market Type": "ACE/LEAP/Main",
+        "Adviser": "Adviser's name",
+        "Issuing House": "Issuing house name",
+        "Last Exposure Date (Draft Prospectus)": "DD MMMM YYYY",
+        "Pre Shariah (Publish)": "COMPLIANT/NOT-COMPLIANT/null",
+        "Pre Shariah (BIS)": "COMPLIANT/NOT-COMPLIANT/null",
+        "Pre Shariah (SC)": "COMPLIANT/NOT-COMPLIANT/null",
+        "Pre Shariah Ratio": "COMPLIANT/NOT-COMPLIANT/null",
+        "Closing Date": "DD MMMM YYYY",
+        "Balloting Date": "DD MMMM YYYY",
+        "Listing Date": "DD MMMM YYYY",
+        "Listing Price": 0.28,
+        "Num of Shares (Enlarged) [M]": 600,
+        "New Shares Issued [M]": 110,
+        "Existing Shares Offered For Sale [M]": 45,
+        "IPO Shares Breakdown of the Enlarged Share": {
+          "Eligible Directors & Employees [M]": 20.0,
+          "Malaysian Public [M]": 30.5,
+          "MITI [M]": 43.2,
+          "Others (Private placements, etc.) [M]": 45.5
+        },
+        "IPO Shares Breakdown of the Existing Share": {
+          "Eligible Directors & Employees [M]": 2.0,
+          "Malaysian Public [M]": 0,
+          "MITI [M]": 4.0,
+          "Others (Private placements, etc.) [M]": 15.5
+        },
+        "Utilisation of Proceeds - Debt Funding [%]": 16.9,
+        "Utilisation of Proceeds - Debt Funding ['000]": 54332,
+        "Profit After Tax (PAT) ['000]": 52274,
+        "PAT (FYE) List ['000, comma-separated]": [
+                                                ["FYE 2022" , 6152],
+                                                ["FYE 2023" , 1810],
+                                                ["FYE 2024" , 7619]
+                                                    ],
+        "PAT (FPE) List ['000, comma-separated]": [
+                                                ["FPE 2023" , 1205],
+                                                ["FPE 2024" , 3822]
+                                                    ],
+        "REVENUE (FYE) List ['000, comma-separated]" :[
+                                                ["FYE 2022" , 7152],
+                                                ["FYE 2023" , 3810],
+                                                ["FYE 2024" , 9619]
+                                                    ],
+        "REVENUE (FPE) List ['000, comma-separated]" : [
+                                                ["FPE 2023" , 610],
+                                                ["FPE 2024" , 1625]
+                                                    ],
+        "FPE Period": 6,
+        "PE (reported)": 12.5,
+        "PAT Margin [%]": 4.3,
+        "Total equity and liabilities (Pro Forma III) ['000]": 14379,
+        "Total Liabilities (Pro Forma III) ['000]": 9435,
+        "Total Cash and Cash Equivalent ['000]": 11852,
+        Total Cash and Bank Balances (Pro Forma III)['000] : 54127,
+        "Total Interest-Bearing Borrowings ['000]": 3265        
+      }
