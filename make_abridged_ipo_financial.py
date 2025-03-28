@@ -7,7 +7,7 @@ possible_keywords = [ # Financial Data for the audited years
                     "of the ipo",
                     "of our ipo",
                     # "report",
-                    "promoters, substantial shareholders, directors",
+                    "key senior management",
 
                     # Use of proceeds 
                     "use of proceeds",

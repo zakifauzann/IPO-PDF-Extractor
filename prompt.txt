@@ -25,6 +25,7 @@ Here are the specific data points to extract:
 4.  **FPE Period**:
     *   Extract the duration of the *Financial Period End* (FPE) in months.
     *   Return ONLY the number of months as an integer (e.g., 6, 9, 12).
+    *   example, FPE : Financial Period ending 30 September means -> FPE Period : 9
     *   If no FPE is mentioned return `null`.
 
 5.  **PE (Price-to-Earnings Ratio, reported)**:
@@ -107,16 +108,17 @@ Here are the specific data points to extract:
     *   Return ONLY the numerical value in RM'000, rounded to the NEAREST integer.
     *   If no Pro Forma data is available, return `null`.
 ---
-14. **Total Cash and Cash Equivalent ['000]**:
-    *   Extract the most recent *TOTAL CASH AND CASH EQUIVALENTS* value available, primarily from the *balance sheet* within the "Financial Information" section. Get the value for each FYE and FPE
-    *   Exclude "Cash and Bank Balances"; this is merely a component of cash and cash equivalents.
-    *   Format the output as a dictionary. Each key should represent the FYE/FPE (e.g., "FYE 2023") and the corresponding value should be the numerical value in RM'000, rounded to the nearest integer
+14.     Total Cash and Cash Equivalent at end of financial year/period ['000]:      
+    *   Extract  *Total Cash and Cash Equivalent at end of financial year/period* value available. Get the value for each FYE and FPE.
+    *   Format the output as a dictionary. Each key should represent the FYE/FPE (e.g., "FYE 2023") and the corresponding value should be the numerical value in RM'000, rounded to the nearest integer.
     *   Return values in dictionary format as follows:
         {
             "FYE 2023": 610,
             "FPE 2024": 1625
         }
     *   If no Total Cash and Cash Equivalent is found, return an empty dictionary `{}`.
+
+    
 
 15. **Total Interest-Bearing Borrowings ['000]**:
     *   Extract the total value of borrowings that bear interest.
@@ -131,7 +133,7 @@ Here are the specific data points to extract:
         *   **Amount (RM'000)**: The allocation amount in RM'000 (integer, without rounding).
         *   **Percentage (%)**: The allocation percentage (float, without rounding).
         *   **Time Frame in numbers**: The time frame for the allocation in months (integer, 1-12).
-        *   **Highlights**: A concise (around 50 words) explanation of how the proceeds will be used, based on the context in the prospectus.
+        *   **Highlights**: A concise (around 50 words) explanation of how the proceeds will be used, based on the context in the prospectus. Do a simple summary. 
     *   Represent this as a list of dictionaries. If no use of proceeds information is found, return an empty dict '{}'.
 
 17. **Executive Directors**:
@@ -141,8 +143,8 @@ Here are the specific data points to extract:
         *   **Title**: The director's full title.
         *   **Name**: The director's full name.
         *   **Age**: The director's age (integer).
-        *   **Total Remuneration**: The total remuneration paid for the LATEST Financial Year Ended (FYE) (integer). AVOID proposed remuneration. If remuneration is broken down (salary, fees, etc.), include a "remuneration" sub-dictionary with the breakdown; otherwise, only include the "total remuneration" field.  
-        *  Return ONLY the remuneration value in RM'000, rounded to the NEAREST integer.
+        *   **Total Remuneration**: The total remuneration paid for the LATEST Financial Year Ended (FYE) (integer). 
+
     *   Represent this as a list of dictionaries. If no executive directors are found, return an empty dict '{}'.
 
 18. **REVENUE (FYE) List ['000, comma-separated]**:
@@ -159,16 +161,10 @@ Here are the specific data points to extract:
 *   **Name**: The full company name (string).
 *   **Website**: The company's website address (string).
 *   **Summary**: A brief (approximately 100 words) summary of the company and its subsidiaries, including their business activities and countries of incorporation (string).
-*   **Code**: The company's stock code (string) or `null` if not found.
-*   **Symbol**: The company's stock symbol (string) or `null` if not found.
 *   **Market Type**: The listing market: "ACE", "LEAP", or "Main" (string).
 *   **Adviser**: The adviser's name (string).
 *   **Issuing House**: The issuing house name (string).
 *   **Last Exposure Date (Draft Prospectus)**: The last exposure date of the draft prospectus in "DD MMMM YYYY" format (string).
-*   **Pre Shariah (Publish)**: "COMPLIANT", "NOT-COMPLIANT", or `null` if not found (string).
-*   **Pre Shariah (BIS)**: "COMPLIANT", "NOT-COMPLIANT", or `null` if not found (string).
-*   **Pre Shariah (SC)**: "COMPLIANT", "NOT-COMPLIANT", or `null` if not found (string).
-*   **Pre Shariah Ratio**: The pre-shariah ratio (string) or `null` if not stated.
 *   **Closing Date**: The closing date in "DD MMMM YYYY" format (string).
 *   **Balloting Date**: The balloting date in "DD MMMM YYYY" format (string).
 *   **Listing Date**: The listing date in "DD MMMM YYYY" format (string).
@@ -180,12 +176,13 @@ Here are the specific data points to extract:
     *   **Eligible Directors & Employees [M]**: float
     *   **Malaysian Public [M]**: float
     *   **BUMIPUTERA INVESTORS , MINISTRY OF INVESTMENT, TRADE AND INDUSTRY - MITI [M]**: float
-    *   **Others (Private placements, etc.) [M]**: float
+    *   **Others (Private placements to selected investors, etc.) [M]**: float
 *   **IPO Shares Breakdown of the Existing Share**: (all values in Millions as floats)
+    #   usually written as  :   OFFER FOR SALE OF 74,000,000 EXISTING SHARES BY WAY OF PRIVATE PLACEMENT TO SELECTED INVESTORS -> Others : 74.0
     *   **Eligible Directors & Employees [M]**: float
     *   **Malaysian Public [M]**: float
     *   **BUMIPUTERA INVESTORS ,MINISTRY OF INVESTMENT, TRADE AND INDUSTRY - MITI [M]**:  float
-    *   **Others (Private placements, etc.) [M]**: float
+    *   **Others (Private placements to selected investors, etc.) [M]**: float
 *   **Utilisation of Proceeds - Debt Funding [%]**: Percentage of proceeds used for debt funding (float).
 *   **Utilisation of Proceeds - Debt Funding ['000]**: Amount of proceeds used for debt funding in thousands of RM (integer).
 
@@ -230,16 +227,10 @@ Here are the specific data points to extract:
     "Name": "ABC Holdings",
     "Website": "www.abc.xyz",
     "Summary": "ABC holdings is a holdings company that made their fortune by investing in alphabet supplies. Founded in 1956 in Paris.",
-    "Code": null,
-    "Symbol": null,
     "Market Type": "Main",
     "Adviser": "Adviser's name",
     "Issuing House": "Issuing house name",
     "Last Exposure Date (Draft Prospectus)": "15 January 2024",
-    "Pre Shariah (Publish)": "COMPLIANT",
-    "Pre Shariah (BIS)": "COMPLIANT",
-    "Pre Shariah (SC)": "COMPLIANT",
-    "Pre Shariah Ratio": null,
     "Closing Date": "29 February 2024",
     "Balloting Date": "05 March 2024",
     "Listing Date": "12 March 2024",
@@ -302,9 +293,10 @@ Here are the specific data points to extract:
         "FYE 2023": 610,
         "FPE 2024": 1625
     },
-    "Total Cash and Cash Equivalent ['000]": {
+    "Total Cash and Cash Equivalent at the end of financial year/period ['000]": {
         "FYE 2023": 610,
-        "FPE 2024": 1625
+        "FPE 2024": 1625,
+        ...
     },
     "Total Interest-Bearing Borrowings ['000]": 3265
 }
