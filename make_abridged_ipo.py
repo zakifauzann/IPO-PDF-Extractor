@@ -4,8 +4,8 @@ import os
 possible_keywords = [ "executive", "director" ,"senior management", "corporate structure", "corporate profile" , "management" , 
                     "chairman statement", "chairman", 
                     # "financial statements" , "notes to financial statements", "notes to the financial statements",
-                    "our subsidiaries"
-                    "revenue by business segments"
+                    "our subsidiaries",
+                    "revenue by business segments",
                     "corporate info" , "salary" , "remuneration",
 
                     "business overview",
@@ -14,8 +14,9 @@ possible_keywords = [ "executive", "director" ,"senior management", "corporate s
 
                     "information",
                     "prospectus summary",
-                    "details of our ipo"
-                    "table of contents"
+                    "details of our ipo",
+                    "particulars of the ipo",
+                    "table of contents",
 
                     ## Major Customer
                     "major customers",
@@ -102,6 +103,10 @@ def split_into_sections(page_titles):
         page_num = 0
         for page_num, title in enumerate(page_titles):
             # print("Page:" , page_num , " -   ", title)  # debug
+            if page_num < 30:
+                list_of_pages.append(page_num)
+                continue
+
             if any(keyword in title.lower() for keyword in possible_keywords) and not any(keyword in title.lower() for keyword in exclude_keywords):
                 print("Match:" , page_num , " -   ", title)  # debug
                 next_page_flag = True  ## possible next page is useful
@@ -135,9 +140,29 @@ def get_tableofcontents(filename):
     toc = file.get_toc()
     print("Table of Contents : ", toc)
 
+
+
+def make_abridged_ipo(pdf_name):
+    pdf_file_path =  os.path.join("pdf", pdf_name)  # Replace with your PDF file path
+    page_titles = extract_titles_from_pdf(pdf_file_path)
+    page_numbers = split_into_sections(page_titles)
+    # get_tableofcontents(pdf_file_path)
+
+    print(pdf_file_path)
+    print("Length of abridged pdf: ", len(page_numbers))
+
+    # Open PDF and create a new one with selected pages
+    doc = fitz.open(pdf_file_path)
+    new_pdf_name = pdf_file_path.replace('.pdf', '_abridged.pdf')
+    doc.select(page_numbers)  # Keep only selected pages
+    doc.set_metadata({})  # Clear metadata
+    doc.save(new_pdf_name, garbage=4, deflate=True)  # Optimize PDF
+    doc.close()
+
+
 # Example usage:
 if __name__ == '__main__':
-    pdf_file_path =  os.path.join("pdf", "HI.pdf")  # Replace with your PDF file path
+    pdf_file_path =  os.path.join("pdf", "panda.pdf")  # Replace with your PDF file path
     page_titles = extract_titles_from_pdf(pdf_file_path)
     page_numbers = split_into_sections(page_titles)
     # get_tableofcontents(pdf_file_path)
