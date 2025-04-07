@@ -109,12 +109,13 @@ Here are the specific data points to extract:
     *   If no Pro Forma data is available, return `null`.
 ---
 14.     Total Cash and Cash Equivalent at end of financial year/period ['000]:      
-    *   Extract  *Total Cash and Cash Equivalent at end of financial year/period* value available. Get the value for each FYE and FPE.
-    *   Format the output as a dictionary. Each key should represent the FYE/FPE (e.g., "FYE 2023") and the corresponding value should be the numerical value in RM'000, rounded to the nearest integer.
+    *   Extract *Total Cash and Cash Equivalent at end of financial year/period* values available for all reporting periods (both FYE and FPE).
+    *   Format the output as a dictionary. Each key should represent the FYE/FPE (e.g., "FYE 2023", "FPE 2024") and the corresponding value should be the numerical value in RM'000, rounded to the nearest integer.
     *   Return values in dictionary format as follows:
         {
             "FYE 2023": 610,
-            "FPE 2024": 1625
+            "FPE 2024": 1625,
+            ...
         }
     *   If no Total Cash and Cash Equivalent is found, return an empty dictionary `{}`.
 
@@ -144,7 +145,6 @@ Here are the specific data points to extract:
         *   **Name**: The director's full name.
         *   **Age**: The director's age (integer).
         *   **Total Remuneration**: The total remuneration paid for the LATEST Financial Year Ended (FYE) (integer). 
-
     *   Represent this as a list of dictionaries. If no executive directors are found, return an empty dict '{}'.
 
 18. **REVENUE (FYE) List ['000, comma-separated]**:
@@ -289,9 +289,10 @@ Here are the specific data points to extract:
             "Pro Forma III": <value>
         },
     "Total Current Liabilities (Pro Forma III) ['000]": 4460,
-     "Total Cash and Bank Balances (Pro Forma)['000]":  {
+    "Total Cash and Bank Balances (Pro Forma)['000]":  {
         "FYE 2023": 610,
-        "FPE 2024": 1625
+        "FPE 2024": 1625,
+        ...
     },
     "Total Cash and Cash Equivalent at the end of financial year/period ['000]": {
         "FYE 2023": 610,
