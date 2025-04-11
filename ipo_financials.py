@@ -25,7 +25,7 @@ except Exception as e:
 def analyze_pdf_with_gemini(pdf_path):
     """Send pdf to Gemini AI and get structured JSON data, with improved error handling."""
 
-    with open("ipo_financial.txt", "r", encoding='utf-8') as p:
+    with open("ipo_financials.txt", "r", encoding='utf-8') as p:
         prompt = p.read()
 
     # Upload the PDF using the File API
