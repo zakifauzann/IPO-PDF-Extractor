@@ -371,3 +371,80 @@ OUTPUT REQUIREMENTS (MUST BE FOLLOWED EXACTLY):
 *   Percentages should be represented as percentages (e.g., 25% for 25%).
 *   Arrays should be used to represent lists of items (e.g., a list of Executive Directors).
 *   Include ALL the fields from the example, even if the value is `null`.
+
+{
+  "geo_segments": [
+    {
+      "name": "Malaysia",
+      "revenue": 1234567.89,
+      "percentage": "90.00%"
+    },
+    {
+      "name": "Singapore",
+      "revenue": 123456.79,
+      "percentage": "10.00%"
+    }
+  ],
+  "business_segments": [
+    {
+      "name": "Construction",
+      "revenue": 800000.00,
+      "percentage": "65.00%"
+    },
+    {
+      "name": "Property Development",
+      "revenue": 434567.89,
+      "percentage": "35.00%"
+    }
+  ],
+  "major_customers": [
+    {
+      "name": "Customer A",
+      "revenue": 500000.00,
+      "percentage": "40.50%"
+    },
+    {
+      "name": "Customer B",
+      "revenue": 300000.00,
+      "percentage": "24.30%"
+    }
+  ],
+  "corporate_structure": {
+    "subsidiaries": [
+      {
+        "name": "Subsidiary 1 Berhad",
+        "principal_activities": "Manufacturing",
+        "ownership_percentage": "100.00%"
+      },
+      {
+        "name": "Subsidiary 2 Berhad",
+        "principal_activities": "Trading",
+        "ownership_percentage": "75.00%"
+      }
+    ],
+    "associates": [
+      {
+        "name": "Associate 1 Berhad",
+        "principal_activities": "Consulting",
+        "ownership_percentage": "30.00%"
+      }
+    ]
+  },
+  "sector": {
+    "sector": "CONSTRUCTION",
+    "sub_sector": "CONSTRUCTION",
+    "explanation": "The company's primary activities involve the construction of commercial buildings and infrastructure projects, aligning with the definition of the Construction sector and sub-sector as defined by Bursa Malaysia."
+  },
+  "additional_sectors": [
+    {
+      "sector": "Construction",
+      "explanation": "The company is involved in building and infrastructure projects."
+    }
+  ],
+  "bursa_peers": [
+    "Company C Berhad",
+    "Company D Berhad",
+    "Company E Berhad"
+  ],
+  "unbilled_order_book": 5000000.00
+}
