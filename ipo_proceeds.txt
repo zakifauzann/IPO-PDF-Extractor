@@ -344,17 +344,29 @@ Strictly only extract data focusing specifically on the latest Financial Year En
     "Solar Power Producer CGPP", "Disruptive Innovation", "Data Center Contractors", "Data Center MEPs",
     "Renewable Energy", "Renewable Energy Electricity"
 
-7.  **Bursa Peers**
+    * Notes:
+    * Solar EPCC = Solar Engineering, Procurement, Construction, and Commissioning.
+    * Solar Power Producer CGPP = Solar Power Producer Corporate Green Power Programme
+
+
+7.  **IMR Sectors**
+
+    * Go to IMR Report/Independent Market Research Report section.
+    * It can be under the business overview or industry overview section.
+    * Find the title of the IMR report, the sectors are in there.
+
+8.  **Bursa Peers**
 
     * Go to Industry Overview or Competitive Overview or similar section and find Independent Market Research Report or IMR Report.
     * ONLY extract information from this section. Ignore information found on section other than this.
     * Find the industry players information (in table). The information (table) can be in two or more pages.
-    * Keywords for the title can be "Industry Player", "Competitive Overview", "Competitive Landscape"
-    * Two important things here is the table, and the notes below it.
-    * Extract all company with "Berhad". DO NOT include/extract company with "Sdn Bhd" or "S/B" it their name.
+    * Keywords for the title can be "Industry Players", "Competitive Overview", "Competitive Landscape"
+    * Two important things here is the table of the industry players or competitive overview or competitive landscape, and the notes below the table.
+    * Extract all company with "Berhad", either in the table or in the notes. DO NOT include/extract company with "Sdn Bhd" or "S/B" it their name.
     * If the table or notes indicates that the company is a subsidiary (e.g., 'Wholly owned subsidiary of Company X'), and 'Company X' (the parent company) is listed on Bursa Malaysia, extract company X and ignore the subsidiary company.
 
-8.  **Unbilled/Outstanding Order Book**
+
+9.  **Unbilled/Outstanding Order Book**
 
     * Locate the Order Book/Orderbook section in the document.
     * Extract the Unbilled/Outstanding Order Book value.
@@ -441,6 +453,8 @@ OUTPUT REQUIREMENTS (MUST BE FOLLOWED EXACTLY):
       "explanation": "The company is involved in building and infrastructure projects."
     }
   ],
+  "IMR_sectors:" Sector A, Sector B,
+
   "bursa_peers": [
     "Company C Berhad",
     "Company D Berhad",
