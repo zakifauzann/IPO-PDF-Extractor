@@ -44,7 +44,7 @@ def analyze_pdf_with_gemini(pdf_url):
         # Generate content using Gemini AI
         response = client.models.generate_content(
             model="gemini-2.0-flash",
-            config=types.GenerateContentConfig(temperature=0.3),
+            config=types.GenerateContentConfig(temperature=0.5),
             contents=[
                 types.Part.from_bytes(data=pdf_data, mime_type='application/pdf'),
                 prompt
