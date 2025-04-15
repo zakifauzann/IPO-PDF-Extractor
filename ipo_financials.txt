@@ -179,6 +179,7 @@ Here are the specific data points to extract:
     *   **Others (Private placements to selected investors, etc.) [M]**: float
 *   **IPO Shares Breakdown of the Existing Share**: (all values in Millions as floats)
     #   usually written as  :   OFFER FOR SALE OF 74,000,000 EXISTING SHARES BY WAY OF PRIVATE PLACEMENT TO SELECTED INVESTORS -> Others : 74.0
+    #   PRIVATE PLACEMENTTO IDENTIFIED BUMIPUTERA INVESTORS APPROVED BY THE MITI -> MITI 
     *   **Eligible Directors & Employees [M]**: float
     *   **Malaysian Public [M]**: float
     *   **BUMIPUTERA INVESTORS ,MINISTRY OF INVESTMENT, TRADE AND INDUSTRY - MITI [M]**:  float
