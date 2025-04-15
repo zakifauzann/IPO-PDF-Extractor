@@ -48,7 +48,7 @@ Strictly only extract data focusing specifically on the latest Financial Year En
 
 5.  **Sector:**
     * Identify the company's sector and sub-sector based on Bursa Malaysia's classification (below).
-    * Locate the most relevant keywords in the document rr the most mentioned in the document to support your classification.
+    * Locate the most relevant keywords in the document or the most mentioned in the document to support your classification.
     * Provide a brief explanation for your choice.
     * If no sub-sector is found, state it explicitly—do not assume.
     * Use the reference table below and avoid making assumptions.
@@ -305,6 +305,7 @@ Strictly only extract data focusing specifically on the latest Financial Year En
     * The sectors below are not part of Bursa Malaysia’s classification.
     * Locate the most relevant keywords in the document or the most mentioned in the document to support your classification.
     * Identify and classify them as additional sectors.
+    * Just state any relevant sectors (stated in the list below) but not more than 10 sectors (<=10).
     * Provide a brief explanation for each classification, including the reason for your choice.
 
     "Automotive", "Blue Chip", "Construction", "Consumer Products", "Food & Beverages", "Financial Services", "Healthcare",
@@ -346,7 +347,9 @@ Strictly only extract data focusing specifically on the latest Financial Year En
 
     * Notes:
     * Solar EPCC = Solar Engineering, Procurement, Construction, and Commissioning.
-    * Solar Power Producer CGPP = Solar Power Producer Corporate Green Power Programme
+    * Solar Power Producer CGPP = Solar Power Producer Corporate Green Power Programme.
+    * Penny Stocks = IPO price > RM 0.50.
+    * Diversified industrials = Diversified companies with business activities in three or more sectors of which none contributes substantial revenue.
 
 
 7.  **IMR Sectors**
