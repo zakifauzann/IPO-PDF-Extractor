@@ -4,17 +4,17 @@ from ipo_g_pdf_financial import extract_pdf_financial
 
 def main():
     ##  financial versions of pdf
-    stocks  = ["3ren" , "dengkil" , "HI" , "msbpdf" , "panda" , "cuckoo"]
-    # stocks = ["dengkil"]
+    # stocks  = ["3ren" , "dengkil" , "HI" , "msbpdf" , "panda" , "cuckoo"]
+    stocks = ["WTEC"]
     for stock in stocks:  
         stock_name = stock
         pdf_name = f"{stock_name}.pdf"
         financial_name = f"{stock_name}_financial.pdf"
 
-        make_abridged_financial(pdf_name)
+        # make_abridged_financial(pdf_name)
 
         # extrac data
-        extract_pdf_financial(financial_name)
+        extract_pdf_financial(pdf_name)
 
 
 

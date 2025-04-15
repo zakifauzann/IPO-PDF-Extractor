@@ -74,7 +74,7 @@ def save_json(structured_data, pdf_path, sector_flag = False):
     pdf_file_name = os.path.splitext(os.path.basename(pdf_path))[0]  # Get PDF file name without extension
     
     if not sector_flag:
-        output_file = os.path.join("json", f"{pdf_file_name}_financial.json")
+        output_file = os.path.join("json", f"{pdf_file_name}_financial_25pro.json")
 
     try:
         with open(output_file, "w", encoding="utf-8") as f:
