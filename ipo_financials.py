@@ -1,15 +1,15 @@
 import os
 import json
 import sys
-import re  # Import the regular expression module
+import re
+import httpx
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
-from pathlib import Path
 
 # Load environment variables
-load_dotenv(os.path.join(os.path.expanduser("~") , ".passkey" , ".env"))
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")  # Using GOOGLE_API_KEY
+load_dotenv(os.path.join(os.path.expanduser("~"), ".passkey", ".env"))
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 if not GOOGLE_API_KEY:
     print("Error: Missing GOOGLE_API_KEY in .env file")
@@ -22,95 +22,74 @@ except Exception as e:
     print(f"Error configuring Gemini API: {e}")
     sys.exit(1)
 
-def analyze_pdf_with_gemini(pdf_path):
-    """Send pdf to Gemini AI and get structured JSON data, with improved error handling."""
 
-    with open("ipo_financials.txt", "r", encoding='utf-8') as p:
-        prompt = p.read()
-
-    # Upload the PDF using the File API
-    pdf_file = client.files.upload(
-        file=pdf_path,
-        )
-
+def read_prompt():
     try:
+        with open("ipo_financials.txt", "r", encoding="utf-8") as f:
+            return f.read()
+    except Exception as e:
+        print(f"ERROR: Failed to read prompt file: {e}")
+        sys.exit(1)
+
+
+def analyze_pdf_with_gemini(pdf_url):
+    """Download and analyze PDF from URL with Gemini AI."""
+    try:
+        # Read prompt
+        prompt = read_prompt()
+
+        # Download the PDF from the URL
+        pdf_data = httpx.get(pdf_url).content
+
         # Generate content using Gemini AI
         response = client.models.generate_content(
             model="gemini-2.0-flash",
-            config=types.GenerateContentConfig(
-                temperature=0.7 # Low temperature for consistent outputs, low randomness
-            ),
-            contents=[pdf_file , prompt]  
+            config=types.GenerateContentConfig(temperature=0.3),
+            contents=[
+                types.Part.from_bytes(data=pdf_data, mime_type='application/pdf'),
+                prompt
+            ]
         )
 
-      
         print(response.usage_metadata)
-        match = re.search(r"\{.*}", response.text, re.DOTALL)
 
+        match = re.search(r"\{.*}", response.text, re.DOTALL)
         if match:
             json_text = match.group(0)
         else:
             print("ERROR: Could not extract JSON from Gemini response.")
             json_text = "{}"
 
-        json_Sector = "{}"
-
-        # Parse JSON
         try:
-            json_data = json.loads(json_text)
-            return json_data
-
+            return json.loads(json_text)
         except json.JSONDecodeError as e:
             print(f"ERROR: JSON decoding error: {e}")
-            return json_data
-        
+            return {}
+
     except Exception as e:
         print(f"ERROR: Gemini processing failed: {e}")
         return {}
 
 
-def save_json(structured_data, pdf_path, sector_flag = False):
-    # Change output file name to match the PDF file name
-    pdf_file_name = os.path.splitext(os.path.basename(pdf_path))[0]  # Get PDF file name without extension
-    
-    if not sector_flag:
-        output_file = os.path.join("json", f"{pdf_file_name}_financial.json")
+def save_json(data, pdf_url):
+    filename = os.path.splitext(os.path.basename(pdf_url))[0]
+    output_path = os.path.join("json", f"{filename}_financial.json")
 
     try:
-        with open(output_file, "w", encoding="utf-8") as f:
-            json.dump(structured_data, f, indent=4, ensure_ascii=False)  # Ensure UTF-8 encoding
-        print(f"Extraction complete! Data saved to {output_file}")
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
+        print(f"✅ Extraction complete! Data saved to {output_path}")
     except Exception as e:
-        print(f"ERROR: Error writing to file: {e}")
-    
+        print(f"ERROR: Failed to write JSON: {e}")
 
 
-def extract_pdf_financial(pdf_name):
-   
-    pdf_path = os.path.join("pdf", pdf_name)  # Replace with the actual path to your PDF file
+def extract_pdf_financial(pdf_url):
+    print(f"Processing PDF: {pdf_url}")
+    extracted_data = analyze_pdf_with_gemini(pdf_url)
+    save_json(extracted_data, pdf_url)
 
-    if not os.path.exists(pdf_path):
-        print(f"Error: PDF file '{pdf_path}' not found.")
-        sys.exit(1)
-
-    print(f"Processing PDF: {pdf_path}")
-
-    # save data from AI
-    json_text = analyze_pdf_with_gemini(pdf_path)
-    save_json(json_text , pdf_path)
 
 if __name__ == "__main__":
-    # Specify the PDF path here:
-    pdf_path = os.path.join("pdf", "3ren_financial.pdf")  # Replace with the actual path to your PDF file
-
-    if not os.path.exists(pdf_path):
-        print(f"Error: PDF file '{pdf_path}' not found.")
-        sys.exit(1)
-
-    print(f"Processing PDF: {pdf_path}")
-
-    # save data from AI
-    json_text = analyze_pdf_with_gemini(pdf_path)
-    save_json(json_text , pdf_path)
-
-
+    # Example test URL
+    test_url = "https://anns.sgp1.cdn.digitaloceanspaces.com/3443412.pdf"
+    extract_pdf_financial(test_url)
