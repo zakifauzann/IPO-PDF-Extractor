@@ -26,7 +26,10 @@ except Exception as e:
 def analyze_text_with_gemini(pdf_path):
     """Send extracted text to Gemini AI and get structured JSON data, with improved error handling."""
     prompt = f"""
-        You are an expert in financial analysis and IPO prospectuses. Your ABSOLUTE TOP PRIORITY is to extract specific information from the provided text and output the response in a STRICTLY VALID JSON format. If information is not found, leave the corresponding field empty or null. Do not calculate or assume any values unless explicitly stated. You will extract information ONLY from the "Business Overview", "Financial Information," "Key Financial Data," "Corporate Information," "Operating Segments", or similar sections of the IPO prospectus.
+        You are an expert in financial analysis and IPO prospectuses. 
+        Your ABSOLUTE TOP PRIORITY is to extract specific information from the provided text and output the response in a STRICTLY VALID JSON format. 
+        If information is not found, leave the corresponding field empty or null. Do not calculate or assume any values unless explicitly stated. 
+        You will extract information ONLY from the "Business Overview", "Financial Information," "Key Financial Data," "Corporate Information," "Operating Segments", or similar sections of the IPO prospectus.
 
         EXTRACT THE FOLLOWING INFORMATION:
         
@@ -34,20 +37,22 @@ def analyze_text_with_gemini(pdf_path):
 
         1.  **Geographical Segments**:
             * Extract total revenue per geographical segment.
+            * All values will be in only one page or two consecutive pages. Focus on those pages only. Ignore values if they are pages apart.
             * You MUST take values of latest FYE or Financial Year Ended (extract values under the latest FYE year). Do not mistake for latest year of FPE.
             * You MUST use the values of the TOTAL revenues.
             * You MUST calculate the percentage based on the total revenue.
             * Ensure the percentage is presented in a standard format (e.g., 98.83% instead of 0.9883).
-            * If the segment data is not found, return null.
+            * If the segment data is not found, return null. Do not assume.
             * Figures must be in RM'000.
 
         2.  **Business Segments**:
             * Extract total revenue per business segment.
+            * All values will be in only one page or two consecutive pages. Focus on those pages only. Ignore values if they are pages apart.
             * You MUST take values of latest FYE or Financial Year Ended (extract values under the latest FYE year). Do not mistake for latest year of FPE.
             * You MUST use the values of the TOTAL revenues.
             * You MUST calculate the percentage based on the total revenue.
             * Ensure the percentage is presented in a standard format (e.g., 98.83% instead of 0.9883).
-            * If the segment data is not found, return null.
+            * If the segment data is not found, return null. Do not assume.
             * Figures must be in RM'000.
 
         3.  **Major Customers**:
@@ -326,7 +331,7 @@ def analyze_text_with_gemini(pdf_path):
         6.  **Additional Sector**
 
             * The sectors below are not part of Bursa Malaysia’s classification.
-            * Locate the most relevant keywords in the document rr the most mentioned in the document to support your classification. 
+            * Locate the most relevant keywords in the document or the most mentioned in the document to support your classification. 
             * Identify and classify them as additional sectors.
             * Provide a brief explanation for each classification, including the reason for your choice.
             
@@ -367,6 +372,24 @@ def analyze_text_with_gemini(pdf_path):
             "Solar Power Producer CGPP", "Disruptive Innovation", "Data Center Contractors", "Data Center MEPs",
             "Renewable Energy", "Renewable Energy Electricity"
             
+        7.  **Bursa Peers**
+            
+            * Go to Industry Overview or Competitive Overview or similar section and find Independent Market Research Report or IMR Report.
+            * ONLY extract information from this section. Ignore information found on section other than this. 
+            * Find the industry players information (in table). The information (table) can be in two or more pages.
+            * Keywords for the title can be "Industry Player", "Competitive Overview", "Competitive Landscape"
+            * Two important things here is the table, and the notes below it.
+            * Extract all company with "Berhad". DO NOT include/extract company with "Sdn Bhd" or "S/B" it their name.
+            * If the table or notes indicates that the company is a subsidiary (e.g., 'Wholly owned subsidiary of Company X'), and 'Company X' (the parent company) is listed on Bursa Malaysia, extract company X and ignore the subsidiary company.
+            
+        8.  **Unbilled/Outstanding Order Book**
+
+            * Locate the Order Book/Orderbook section in the document.
+            * Extract the Unbilled/Outstanding Order Book value.
+            * If multiple figures are mentioned, provide the latest available amount.
+            * If not explicitly stated, do not assume or infer values.
+            
+            
         OUTPUT REQUIREMENTS (MUST BE FOLLOWED EXACTLY):
 
         *   THE OUTPUT MUST BE A VALID JSON OBJECT. THIS IS YOUR TOP PRIORITY.
@@ -382,8 +405,10 @@ def analyze_text_with_gemini(pdf_path):
         # Generate content using Gemini AI
         response = client.models.generate_content(
             model="gemini-2.0-flash",
+            # gemini-2.5-pro-exp-03-25 can get pretty accurate results
+            # 0.3 temperature
             config=types.GenerateContentConfig(
-                temperature=0.3  # Low temperature for consistent outputs, low randomness
+                temperature=0.3 # Low temperature for consistent outputs, low randomness
             ),
             contents=[
                 types.Part.from_bytes(
@@ -419,7 +444,7 @@ def analyze_text_with_gemini(pdf_path):
 
 if __name__ == "__main__":
     # Specify the PDF path here:
-    pdf_path = os.path.join('pdf/chb.pdf')  # Replace with the actual path to your PDF file
+    pdf_path = os.path.join('pdf/cuckoo.pdf')  # Replace with the actual path to your PDF file
 
     if not os.path.exists(pdf_path):
         print(f"Error: PDF file '{pdf_path}' not found.")
