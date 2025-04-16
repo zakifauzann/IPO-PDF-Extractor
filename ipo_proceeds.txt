@@ -12,6 +12,7 @@ Strictly only extract data focusing specifically on the latest Financial Year En
     * All values will be in only one page or two consecutive pages. Focus on those pages only. Ignore values if they are pages apart.
     * You MUST take values of latest FYE or Financial Year Ended (extract values under the latest FYE year). Do not mistake for latest year of FPE.
     * You MUST use the values of the TOTAL revenues.
+    * The revenue might be summed into for example "Foreign Countries", if there are individual countries, extract the individual ones.
     * You MUST calculate the percentage based on the total revenue.
     * Ensure the percentage is presented in a standard format (e.g., 98.83% instead of 0.9883).
     * If the segment data is not found, return null. Do not assume.
@@ -19,6 +20,7 @@ Strictly only extract data focusing specifically on the latest Financial Year En
 
 2.  **Business Segments**:
     * Extract total revenue per business segment.
+    * Other names for Business Segment might include "business activities and products". Extract them because it is basically business segment too.
     * All values will be in only one page or two consecutive pages. Focus on those pages only. Ignore values if they are pages apart.
     * You MUST take values of latest FYE or Financial Year Ended (extract values under the latest FYE year). Do not mistake for latest year of FPE.
     * You MUST use the values of the TOTAL revenues.
